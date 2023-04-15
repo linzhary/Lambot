@@ -15,7 +15,7 @@ public abstract class TypeMatcherAttribute : Attribute
     /// </summary>
     public abstract int Type { get; }
     /// <summary>
-    /// 优先级，值越小优先级越高，默认为0
+    /// 优先级，值越小优先级越高，默认为<see cref="int.MaxValue"/>
     /// </summary>
     public virtual int Priority { get; set; } = int.MaxValue;
     /// <summary>
@@ -23,7 +23,7 @@ public abstract class TypeMatcherAttribute : Attribute
     /// </summary>
     public bool Break { get; set; } = false;
     /// <summary>
-    /// 是否有RuleMatcher
+    /// RuleMatcher的优先级
     /// </summary>
     public int RulePrioirty { get; set; } = int.MaxValue;
 }
