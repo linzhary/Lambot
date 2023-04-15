@@ -1,0 +1,54 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.4.33213.308
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lambot", "Src\Lambot\Lambot.csproj", "{FB380822-EBEC-4457-A568-0FC9108D54D2}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lambot.Core", "Src\Lambot.Core\Lambot.Core.csproj", "{21B213EA-3E2D-44BA-9841-7D8603369EB0}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Src", "Src", "{6D622FA4-E44B-47AE-9CB9-EBB398547457}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Adapters", "Adapters", "{98C5A9B9-D59D-4B8B-A1E9-F7D83E2BF59D}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lambot.Adapters.OneBot", "Src\Adapters\Lambot.Adapters.OneBot\Lambot.Adapters.OneBot.csproj", "{E60F9326-55F8-436D-9A7C-740576D20B81}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lambot.Plugin", "Src\Lambot.Plugin\Lambot.Plugin.csproj", "{3F451CFE-29AC-4645-AC2A-FC48502C754D}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{FB380822-EBEC-4457-A568-0FC9108D54D2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FB380822-EBEC-4457-A568-0FC9108D54D2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FB380822-EBEC-4457-A568-0FC9108D54D2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FB380822-EBEC-4457-A568-0FC9108D54D2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{21B213EA-3E2D-44BA-9841-7D8603369EB0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{21B213EA-3E2D-44BA-9841-7D8603369EB0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{21B213EA-3E2D-44BA-9841-7D8603369EB0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{21B213EA-3E2D-44BA-9841-7D8603369EB0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E60F9326-55F8-436D-9A7C-740576D20B81}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E60F9326-55F8-436D-9A7C-740576D20B81}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E60F9326-55F8-436D-9A7C-740576D20B81}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E60F9326-55F8-436D-9A7C-740576D20B81}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3F451CFE-29AC-4645-AC2A-FC48502C754D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3F451CFE-29AC-4645-AC2A-FC48502C754D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3F451CFE-29AC-4645-AC2A-FC48502C754D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3F451CFE-29AC-4645-AC2A-FC48502C754D}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{FB380822-EBEC-4457-A568-0FC9108D54D2} = {6D622FA4-E44B-47AE-9CB9-EBB398547457}
+		{21B213EA-3E2D-44BA-9841-7D8603369EB0} = {6D622FA4-E44B-47AE-9CB9-EBB398547457}
+		{98C5A9B9-D59D-4B8B-A1E9-F7D83E2BF59D} = {6D622FA4-E44B-47AE-9CB9-EBB398547457}
+		{E60F9326-55F8-436D-9A7C-740576D20B81} = {98C5A9B9-D59D-4B8B-A1E9-F7D83E2BF59D}
+		{3F451CFE-29AC-4645-AC2A-FC48502C754D} = {6D622FA4-E44B-47AE-9CB9-EBB398547457}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {51848CBE-CA03-403F-A3A1-2559E5B009A0}
+	EndGlobalSection
+EndGlobal

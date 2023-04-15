@@ -1,0 +1,29 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Lambot.Plugin;
+
+[AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
+public abstract class TypeMatcherAttribute : Attribute
+{
+    public readonly string Id = Guid.NewGuid().ToString("n");
+    /// <summary>
+    /// 匹配类型
+    /// </summary>
+    public abstract int Type { get; }
+    /// <summary>
+    /// 优先级，值越小优先级越高，默认为0
+    /// </summary>
+    public virtual int Priority { get; set; } = int.MaxValue;
+    /// <summary>
+    /// 是否阻断消息
+    /// </summary>
+    public bool Break { get; set; } = false;
+    /// <summary>
+    /// 是否有RuleMatcher
+    /// </summary>
+    public int RulePrioirty { get; set; } = int.MaxValue;
+}

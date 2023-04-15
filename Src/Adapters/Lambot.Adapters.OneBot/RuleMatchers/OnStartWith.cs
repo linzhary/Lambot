@@ -1,0 +1,26 @@
+﻿using Lambot.Plugin;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Lambot.Adapters.OneBot.RuleMatchers;
+public class OnStartWith : RuleMatcherAttribute
+{
+    private readonly string _text;
+    public OnStartWith(string text)
+    {
+        _text = text;
+        if (Priority == int.MaxValue)
+        {
+            Priority = int.MaxValue - 3;
+        }
+    }
+
+    public override bool Matched(string raw_message)
+    {
+        if(string.IsNullOrWhiteSpace(raw_message)) return false;
+        return raw_message.StartsWith(_text);
+    }
+}
