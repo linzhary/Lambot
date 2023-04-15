@@ -11,15 +11,10 @@ internal class OneBotEventParser : IEventParser
 {
     private readonly Bot _bot;
     private readonly ILogger<OneBotEventParser> _logger;
-    private readonly HashSet<int> _allowedGroups = new();
-    public OneBotEventParser(IConfiguration configuration, ILogger<OneBotEventParser> logger, Bot bot)
+    public OneBotEventParser(ILogger<OneBotEventParser> logger, Bot bot)
     {
         _bot = bot;
         _logger = logger;
-        foreach (var i in configuration.GetSection("AllowedGroups")?.GetChildren())
-        {
-            _allowedGroups.Add(Convert.ToInt32(i.Value));
-        }
     }
 
     /// <summary>
@@ -65,10 +60,6 @@ internal class OneBotEventParser : IEventParser
         var user_id = eventObj.Value<int>("user_id");
         var sub_type = eventObj.Value<string>("sub_type");
         var raw_message = eventObj.Value<string>("raw_message");
-        if (!_allowedGroups.Contains(group_id))
-        {
-            return null;
-        }
         _logger.LogInformation("来自群 [{groupId}] 成员 [{userId}] 的{sub_type}: {raw_message}", group_id, user_id, MessageSubType.GetChinese(sub_type), raw_message);
         return new GroupMessageEvent
         {
