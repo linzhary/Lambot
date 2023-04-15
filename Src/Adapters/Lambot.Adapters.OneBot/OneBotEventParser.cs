@@ -57,10 +57,13 @@ internal class OneBotEventParser : IEventParser
     internal GroupMessageEvent ParseGroupMessageEvent(JObject eventObj)
     {
         var group_id = eventObj.Value<int>("group_id");
+        if (group_id != 658538643) return default;
         var user_id = eventObj.Value<int>("user_id");
         var sub_type = eventObj.Value<string>("sub_type");
         var raw_message = eventObj.Value<string>("raw_message");
         _logger.LogInformation("来自群 [{groupId}] 成员 [{userId}] 的{sub_type}: {raw_message}", group_id, user_id, MessageSubType.GetChinese(sub_type), raw_message);
+
+        
         return new GroupMessageEvent
         {
             GroupId = group_id,
@@ -82,6 +85,7 @@ internal class OneBotEventParser : IEventParser
         var sub_type = eventObj.Value<string>("sub_type");
         var raw_message = eventObj.Value<string>("raw_message");
         _logger.LogInformation("来自好友 [{userId}] 的{sub_type}: {raw_message}", user_id, MessageSubType.GetChinese(sub_type), raw_message);
+
         return new PrivateMessageEvent
         {
             UserId = user_id,

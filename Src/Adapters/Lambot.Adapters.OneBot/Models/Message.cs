@@ -1,20 +1,39 @@
 ﻿using Lambot.Core;
 using System.Reactive.Joins;
 using System.Text.RegularExpressions;
+using static System.Collections.Specialized.BitVector32;
 
 namespace Lambot.Adapters.OneBot;
 
 
 public class Message
 {
-    public string RawMessage => string.Concat(Segments.Select(x => x.ToString()));
 
     public List<MessageSegment> Segments { get; private set; } = new List<MessageSegment>();
 
     public static Message Parse(string raw_message)
     {
-        var match = Regex.Match(raw_message, @"\[CQ:\S+,([\s]\S+=\S+[\s])+\]");
+        var message = new Message();
 
-        return new Message();
+        var parser = new StringParser(raw_message);
+        while (!parser.IsEnd)
+        {
+            if (parser.Current == '[')
+            {
+                var code_seg = parser.ReadTo(']', true);
+                message.Segments.Add(MessageSegment.Parse(code_seg));
+            }
+            else
+            {
+                var text = parser.ReadTo('[');
+                message.Segments.Add(MessageSegment.Text(text));
+            }
+        }
+        return message;
+    }
+
+    public override string ToString()
+    {
+        return string.Concat(Segments.Select(x => x.ToString()));
     }
 }

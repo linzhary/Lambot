@@ -37,9 +37,15 @@ public class TestPlugin : LambotPlugin
     [OnGroupMessage(Priority = 98, Break = true)]
     public async Task OnGroupMessage(GroupMessageEvent evt)
     {
-        var reply = new Message();
-        reply.Segments.Add(MessageSegment.Text($"OnGroupMessage：{evt.RawMessage}"));
-        await _bot.SendGroupMessageAsync(evt.GroupId, reply);
+        var message = Message.Parse(evt.RawMessage);
+        foreach (var seg in message.Segments)
+        {
+            if (seg.Type == "at")
+            {
+                seg.Props["qq"] = 2724078466;
+            }
+        }
+        await _bot.SendGroupMessageAsync(evt.GroupId, message);
     }
 
     /// <summary>

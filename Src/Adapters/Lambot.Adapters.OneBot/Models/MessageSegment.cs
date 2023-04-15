@@ -1,4 +1,6 @@
-﻿namespace Lambot.Adapters.OneBot;
+﻿using System.Linq;
+
+namespace Lambot.Adapters.OneBot;
 public class MessageSegment
 {
     public string Type { get; private set; }
@@ -13,10 +15,10 @@ public class MessageSegment
         return $"[CQ:{Type.ToLower()}{props}]";
 
     }
-    public MessageSegment(string type)
+    public MessageSegment(string type, Dictionary<string, object> props = null)
     {
         Type = type;
-        Props = new Dictionary<string, object>();
+        Props = props ?? new Dictionary<string, object>();
     }
     public static MessageSegment At(int userId)
     {
@@ -28,6 +30,26 @@ public class MessageSegment
     {
         var seg = new MessageSegment("text");
         seg.Props.Add("text", text);
+        return seg;
+    }
+
+    internal static MessageSegment Parse(string code_seg)
+    {
+        var sections = code_seg[4..^1].Split(',');
+        var seg = new MessageSegment(sections[0]);
+        foreach (var section in sections[1..])
+        {
+            var kv = section.Split('=');
+            if (kv.Length < 2) continue;
+            else if (kv.Length == 2)
+            {
+                seg.Props[kv[0]] = kv[1];
+            }
+            else
+            {
+                seg.Props[kv[0]] = string.Join('=', kv[1..]);
+            }
+        }
         return seg;
     }
 }

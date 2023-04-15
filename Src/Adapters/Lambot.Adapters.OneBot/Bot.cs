@@ -36,7 +36,7 @@ public class Bot
             @params = new
             {
                 group_id = group_id,
-                message = message.RawMessage,
+                message = message.ToString(),
                 auto_escape = false
             }
         }, _serializerSettings);
@@ -59,7 +59,7 @@ public class Bot
             {
                 user_id,
                 group_id,
-                message = message.RawMessage,
+                message = message.ToString(),
                 auto_escape = false
             }
         }, _serializerSettings);
