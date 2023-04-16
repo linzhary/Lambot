@@ -10,7 +10,7 @@ public class MessageEventSender
     /// <summary>
     /// 昵称
     /// </summary>
-    public string NickName { get; set; }
+    public string Nickname { get; set; }
 
     /// <summary>
     /// 性别

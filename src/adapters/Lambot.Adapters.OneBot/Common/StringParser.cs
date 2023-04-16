@@ -3,7 +3,7 @@
 internal class StringParser
 {
     private readonly string _source;
-    public bool IsEnd => _index >= _source.Length - 1;
+    public bool IsEnd => _index > _source.Length - 1;
     private int _index = 0;
     public char Current => _source[_index];
 

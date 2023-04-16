@@ -1,15 +1,15 @@
-﻿namespace Lambot.Core.Plugin;
+﻿using System.Reflection;
+
+namespace Lambot.Core.Plugin;
 
 public class PluginMatcherParameter
 {
     public TypeMatcher TypeMatcher { get; set; }
     public RuleMatcher RuleMatcher { get; set; }
-    public PluginTypeInfo PluginTypeInfo { get; set; }
+    public MethodInfo MethodInfo { get; set; }
     public PluginInfo PluginInfo { get; set; }
     public LambotEvent Event { get; set; }
     public object PluginInstance { get; set; }
-
-    public int MatchType => TypeMatcher.Type;
 
     public bool IsRuleMatched
     {

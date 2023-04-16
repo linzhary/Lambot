@@ -4,11 +4,19 @@ using System.Reflection;
 
 namespace Lambot.Core;
 
-public static class HostBuilderExtensions
+public static class ServiceCollectionExtensions
 {
-    public static void RegisterPlugins(this HostBuilder builder)
+    public static IServiceCollection RegisterAdapter<TAdapter>(this IServiceCollection services)
+         where TAdapter : class, IAdapter, new()
     {
-        builder.Services.AddScoped<IPluginCollection, PluginCollection>();
+        var adapter = new TAdapter();
+        Console.WriteLine($"Loading LambotAdapter [{adapter.AdapterName}]");
+        return adapter.ConfigureService(services);
+    }
+
+    public static void RegisterPlugins(this IServiceCollection services)
+    {
+        services.AddSingleton<IPluginCollection, PluginCollection>();
         var entryAssembly = Assembly.GetEntryAssembly();
         var directory = Path.GetDirectoryName(entryAssembly.Location);
         foreach (var file in Directory.GetFiles(directory, "*.dll"))
@@ -26,16 +34,16 @@ public static class HostBuilderExtensions
                  .Where(x => x.IsClass && !x.IsAbstract)
                  .Where(x => x.IsAssignableTo(typeof(PluginBase)))
                  .ToList();
-            foreach (var plugin in plugins) 
+            foreach (var plugin in plugins)
             {
-                builder.Services.AddScoped(plugin);
+                services.AddScoped(plugin);
                 var pluginAttr = plugin.GetCustomAttribute<PluginInfo>() ?? new PluginInfo
                 {
                     Name = plugin.FullName,
                 };
                 foreach (var pluginMethod in plugin.GetMethods())
                 {
-                    PluginCollection.TryAdd(plugin, pluginAttr, pluginMethod);
+                    PluginCollection.TryAdd(pluginAttr, pluginMethod);
                 }
                 Console.WriteLine($"Loading Plugin[{pluginAttr.Name} {pluginAttr.Version}]");
             }

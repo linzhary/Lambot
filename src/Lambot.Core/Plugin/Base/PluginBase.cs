@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Lambot.Core.Plugin;
+﻿namespace Lambot.Core.Plugin;
 
 /// <summary>
 /// 插件基类

@@ -1,7 +1,7 @@
 ﻿using Lambot.Core;
 using Lambot.Core.Plugin;
 using Microsoft.Extensions.Logging;
-using System.Linq.Expressions;
+using System.Text.RegularExpressions;
 
 namespace Lambot.Adapters.OneBot;
 
@@ -9,38 +9,28 @@ internal class OneBotEventMatcher : IPluginMatcher
 {
     private readonly ILogger<OneBotEventMatcher> _logger;
     private readonly LambotContext _context;
+    private readonly Bot _bot;
 
-    public OneBotEventMatcher(ILogger<OneBotEventMatcher> logger, LambotContext context)
+    public OneBotEventMatcher(ILogger<OneBotEventMatcher> logger, LambotContext context, Bot bot)
     {
         _logger = logger;
         _context = context;
+        _bot = bot;
     }
 
     public void Invoke(PluginMatcherParameter parameter)
     {
-        try
+        if (parameter.TypeMatcher is OnGroupMessage)
         {
-            switch ((Matcher.Type)parameter.MatchType)
-            {
-                case Matcher.Type.OnMessage:
-                    Invoke<MessageEvent>(parameter);
-                    break;
-
-                case Matcher.Type.OnGroupMessage:
-                    Invoke<GroupMessageEvent>(parameter);
-                    break;
-
-                case Matcher.Type.OnPrivateMessage:
-                    Invoke<PrivateMessageEvent>(parameter);
-                    break;
-
-                default:
-                    break;
-            }
+            Invoke<GroupMessageEvent>(parameter);
         }
-        catch (Exception ex)
+        else if (parameter.TypeMatcher is OnPrivateMessage)
         {
-            _logger.LogError(ex, "Invoke Matcher Fail : {msg}", parameter.Event.RawMessage);
+            Invoke<PrivateMessageEvent>(parameter);
+        }
+        else if (parameter.TypeMatcher is OnMessage)
+        {
+            Invoke<MessageEvent>(parameter);
         }
     }
 
@@ -51,14 +41,53 @@ internal class OneBotEventMatcher : IPluginMatcher
         if (!parameter.IsRuleMatched) return;
 
         _logger.LogInformation("消息 [{message_id}] 匹配到 [{plugin__name}] 的 [{method_name}]"
-            , parameter.Event.MessageId, parameter.PluginInfo.Name, parameter.PluginTypeInfo.MethodName);
+            , parameter.Event.MessageId, parameter.PluginInfo.Name, parameter.MethodInfo.Name);
 
         _context.IsBreak = parameter.TypeMatcher.Break;
 
-        var instanceExpr = Expression.Constant(parameter.PluginInstance, parameter.PluginTypeInfo.Type);
-        var parameterExpr = Expression.Parameter(typeof(TEvent));
-        var callExpr = Expression.Call(instanceExpr, parameter.PluginTypeInfo.MethodName, null, parameterExpr);
-        var lambdaExpr = Expression.Lambda<Action<TEvent>>(callExpr, parameterExpr);
-        lambdaExpr.Compile().Invoke(parameter.Event as TEvent);
+        var parameters = new List<object>();
+        foreach (var parameterInfo in parameter.MethodInfo.GetParameters())
+        {
+            if (parameterInfo.ParameterType.IsAssignableTo(typeof(Bot)))
+            {
+                parameters.Add(_bot);
+            }
+            else if (parameterInfo.ParameterType.IsAssignableTo(typeof(LambotContext)))
+            {
+                parameters.Add(_context);
+            }
+            else if (parameterInfo.ParameterType.IsAssignableTo(typeof(TEvent)))
+            {
+                parameters.Add(parameter.Event);
+            }
+            else if (parameterInfo.ParameterType.IsValueType)
+            {
+                parameters.Add(Activator.CreateInstance(parameterInfo.ParameterType));
+            }
+            else if (parameter.RuleMatcher is OnRegex regexMatcher)
+            {
+                if (parameterInfo.ParameterType.IsAssignableTo(typeof(Match)))
+                {
+                    parameters.Add(regexMatcher.MatchResult);
+                }
+                else if (parameterInfo.ParameterType.IsAssignableTo(typeof(Group[])))
+                {
+                    parameters.Add(regexMatcher.MatchResult.Groups.Cast<Group>().Skip(1).ToArray());
+                }
+                else if (parameterInfo.ParameterType.IsAssignableTo(typeof(IEnumerable<Group>)))
+                {
+                    parameters.Add(regexMatcher.MatchResult.Groups.Cast<Group>().Skip(1));
+                }
+                else
+                {
+                    parameters.Add(null);
+                }
+            }
+            else
+            {
+                parameters.Add(null);
+            }
+        }
+        parameter.MethodInfo.Invoke(parameter.PluginInstance, parameters.ToArray());
     }
 }

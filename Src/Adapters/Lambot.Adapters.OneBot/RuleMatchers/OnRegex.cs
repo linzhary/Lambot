@@ -6,6 +6,7 @@ namespace Lambot.Adapters.OneBot;
 public class OnRegex : RuleMatcher
 {
     private readonly string _pattern;
+    internal Match MatchResult { get; private set; }
 
     public OnRegex(string pattern)
     {
@@ -15,6 +16,7 @@ public class OnRegex : RuleMatcher
     public override bool Matched(string raw_message)
     {
         if (string.IsNullOrWhiteSpace(raw_message)) return false;
-        return Regex.IsMatch(raw_message, $"^{_pattern}$");
+        MatchResult = Regex.Match(raw_message, $"^{_pattern}$", RegexOptions.IgnoreCase | RegexOptions.Singleline);
+        return MatchResult.Success;
     }
 }

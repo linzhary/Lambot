@@ -6,6 +6,4 @@ public class OnPrivateMessage : OnMessage
     {
         Priority -= 2;
     }
-
-    public override int Type => (int)Matcher.Type.OnGroupMessage;
 }

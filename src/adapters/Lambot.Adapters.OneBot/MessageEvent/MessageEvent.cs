@@ -1,4 +1,5 @@
 ﻿using Lambot.Core;
+using Newtonsoft.Json;
 
 namespace Lambot.Adapters.OneBot;
 
@@ -7,12 +8,12 @@ public class MessageEvent : LambotEvent
     /// <summary>
     /// 消息主类型
     /// </summary>
-    public string Type { get; set; }
+    public MessageType MessageType { get; set; }
 
     /// <summary>
     /// 消息子类型
     /// </summary>
-    public string SubType { get; set; }
+    public MessageSubType SubType { get; set; }
 
     /// <summary>
     /// 消息时间戳(秒)
@@ -25,12 +26,14 @@ public class MessageEvent : LambotEvent
     public long UserId { get; set; }
 
     /// <summary>
-    /// 消息发送人
-    /// </summary>
-    public MessageEventSender Sender { get; set; }
-
-    /// <summary>
     /// 类型化消息体
     /// </summary>
+    [JsonIgnore]
     public Message Message { get; set; }
+
+    public MessageEvent Convert()
+    {
+        Message = Message.Parse(RawMessage);
+        return this;
+    }
 }

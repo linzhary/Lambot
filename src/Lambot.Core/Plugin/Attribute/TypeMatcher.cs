@@ -6,11 +6,6 @@ public abstract class TypeMatcher : Attribute
     public readonly string Id = Guid.NewGuid().ToString("n");
 
     /// <summary>
-    /// 匹配类型
-    /// </summary>
-    public abstract int Type { get; }
-
-    /// <summary>
     /// 优先级，值越小优先级越高，默认为<see cref="int.MaxValue"/>
     /// </summary>
     public virtual int Priority { get; set; } = int.MaxValue;

@@ -1,18 +1,47 @@
 ﻿using Lambot.Core;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Serialization;
 
 namespace Lambot.Adapters.OneBot;
+
+public class EnumJsonConverter : JsonConverter
+{
+    public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+    {
+        throw new NotImplementedException();
+    }
+
+    public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+    {
+        return MessageUtils.ConvertValue(reader.Value, objectType);
+    }
+
+    public override bool CanConvert(Type objectType)
+    {
+        return objectType.IsEnum;
+    }
+}
 
 internal class OneBotEventParser : IEventParser
 {
     private readonly Bot _bot;
     private readonly ILogger<OneBotEventParser> _logger;
+    private readonly JsonSerializer _deserializer;
 
     public OneBotEventParser(ILogger<OneBotEventParser> logger, Bot bot)
     {
         _bot = bot;
         _logger = logger;
+        _deserializer = JsonSerializer.Create(new JsonSerializerSettings
+        {
+            ContractResolver = new CamelCasePropertyNamesContractResolver
+            {
+                NamingStrategy = new SnakeCaseNamingStrategy()
+            },
+            Converters = new[] { new EnumJsonConverter() }
+        });
     }
 
     /// <summary>
@@ -24,7 +53,7 @@ internal class OneBotEventParser : IEventParser
     {
         var eventObj = JObject.Parse(eventMessage);
         var post_type = eventObj.Value<string>("post_type");
-        return post_type switch
+        return MessageUtils.ConvertTo<PostType>(post_type) switch
         {
             PostType.Message => ParseMessageEvent(eventObj),
             _ => null
@@ -39,7 +68,7 @@ internal class OneBotEventParser : IEventParser
     internal MessageEvent ParseMessageEvent(JObject eventObj)
     {
         var message_type = eventObj.Value<string>("message_type");
-        return message_type switch
+        return MessageUtils.ConvertTo<MessageType>(message_type) switch
         {
             MessageType.Group => ParseGroupMessageEvent(eventObj),
             MessageType.Private => ParsePriverMessageEvent(eventObj),
@@ -52,25 +81,14 @@ internal class OneBotEventParser : IEventParser
     /// </summary>
     /// <param name="eventObj"></param>
     /// <returns></returns>
-    internal GroupMessageEvent ParseGroupMessageEvent(JObject eventObj)
+    internal MessageEvent ParseGroupMessageEvent(JObject eventObj)
     {
-        var message_id = eventObj.Value<long>("message_id");
-        var group_id = eventObj.Value<long>("group_id");
-        var user_id = eventObj.Value<long>("user_id");
-        var sub_type = eventObj.Value<string>("sub_type");
-        var raw_message = eventObj.Value<string>("raw_message");
-        _logger.LogInformation("来自群 [{groupId}] 成员 [{userId}] 的{sub_type} [{message_id}]: {raw_message}", group_id, user_id, MessageSubType.GetChinese(sub_type), message_id, raw_message);
+        var evt = eventObj.ToObject<GroupMessageEvent>(_deserializer);
 
-        return new GroupMessageEvent
-        {
-            MessageId = message_id,
-            GroupId = group_id,
-            UserId = user_id,
-            Type = MessageType.Group,
-            SubType = sub_type,
-            Message =  Message.From(raw_message),
-            RawMessage = raw_message
-        };
+        _logger.LogInformation("来自群 [{groupId}] 成员 [{userId}] 的{sub_type} [{message_id}]: {raw_message}",
+            evt.GroupId, evt.UserId, MessageUtils.GetChinese(evt.SubType), evt.MessageId, evt.RawMessage);
+
+        return evt.Convert();
     }
 
     /// <summary>
@@ -78,22 +96,13 @@ internal class OneBotEventParser : IEventParser
     /// </summary>
     /// <param name="eventObj"></param>
     /// <returns></returns>
-    internal PrivateMessageEvent ParsePriverMessageEvent(JObject eventObj)
+    internal MessageEvent ParsePriverMessageEvent(JObject eventObj)
     {
-        var message_id = eventObj.Value<long>("message_id");
-        var user_id = eventObj.Value<long>("user_id");
-        var sub_type = eventObj.Value<string>("sub_type");
-        var raw_message = eventObj.Value<string>("raw_message");
-        _logger.LogInformation("来自好友 [{userId}] 的{sub_type} [{message_id}]: {raw_message}", user_id, MessageSubType.GetChinese(sub_type), message_id, raw_message);
+        var evt = eventObj.ToObject<PrivateMessageEvent>(_deserializer);
 
-        return new PrivateMessageEvent
-        {
-            MessageId = message_id,
-            UserId = user_id,
-            Type = MessageType.Private,
-            SubType = sub_type,
-            Message = Message.From(raw_message),
-            RawMessage = raw_message
-        };
+        _logger.LogInformation("来自好友 [{userId}] 的{sub_type} [{message_id}]: {raw_message}",
+            evt.UserId, MessageUtils.GetChinese(evt.SubType), evt.MessageId, evt.RawMessage);
+
+        return evt.Convert();
     }
 }

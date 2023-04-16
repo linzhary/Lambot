@@ -1,14 +1,19 @@
 ﻿namespace Lambot.Adapters.OneBot;
 
-public static class MessageType
+public enum MessageType
 {
+    /// <summary>
+    /// 未知
+    /// </summary>
+    Unknow,
+
     /// <summary>
     /// 群聊消息
     /// </summary>
-    public const string Group = "group";
+    Group,
 
     /// <summary>
     /// 私聊消息
     /// </summary>
-    public const string Private = "private";
+    Private
 }

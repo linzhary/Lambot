@@ -27,5 +27,5 @@ public class GroupMessageEventSender : MessageEventSender
     /// </summary>
     public string Title { get; set; }
 
-    public int UserId { get; set; }
+    public long UserId { get; set; }
 }

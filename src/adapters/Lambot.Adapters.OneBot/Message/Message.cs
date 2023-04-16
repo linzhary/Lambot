@@ -4,7 +4,7 @@ public class Message
 {
     public List<MessageSeg> Segments { get; private set; } = new List<MessageSeg>();
 
-    public static Message From(string raw_message)
+    public static Message Parse(string raw_message)
     {
         var message = new Message();
 
@@ -18,8 +18,10 @@ public class Message
             }
             else
             {
-                var text = parser.ReadTo('[');
-                message.Segments.Add(MessageSeg.Text(text));
+                message.Segments.Add(new TextMessageSeg
+                {
+                    Text = parser.ReadTo('[')
+                });
             }
         }
         return message;

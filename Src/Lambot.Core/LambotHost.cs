@@ -1,9 +1,21 @@
-﻿namespace Lambot.Core;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
-public static class LambotHost
+namespace Lambot.Core;
+
+public class LambotHost : ILambHost
 {
-    public static HostBuilder CreateBuilder()
+    public static IHostBuilder CreateDefaultBuilder(string[] args)
     {
-        return new HostBuilder();
+        return Host.CreateDefaultBuilder(args)
+            .ConfigureServices((ctx, services) =>
+            {
+                services.AddSingleton<LambotSocketService>();
+
+                services.AddHostedService<LambotSocketListener>();
+                services.AddHostedService<LambotMessageHandler>();
+
+                services.AddScoped<LambotContext>();
+            });
     }
 }

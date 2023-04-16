@@ -9,4 +9,9 @@ public class GroupMessageEvent : MessageEvent
     /// 消息所在群
     /// </summary>
     public long GroupId { get; set; }
+
+    /// <summary>
+    /// 消息发送人
+    /// </summary>
+    public GroupMessageEventSender Sender { get; set; }
 }

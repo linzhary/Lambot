@@ -1,24 +1,29 @@
 ﻿namespace Lambot.Adapters.OneBot;
 
-public static class PostType
+public enum PostType
 {
+    /// <summary>
+    /// 未知
+    /// </summary>
+    Unknow,
+
     /// <summary>
     /// 消息, 例如, 群聊消息
     /// </summary>
-    public const string Message = "message";
+    Message,
 
     /// <summary>
     /// 请求, 例如, 好友申请
     /// </summary>
-    public const string Request = "request";
+    Request,
 
     /// <summary>
     /// 通知, 例如, 群成员增加
     /// </summary>
-    public const string Notice = "notice";
+    Notice,
 
     /// <summary>
     /// 元事件, 例如, go-cqhttp 心跳包
     /// </summary>
-    public const string MetaEvent = "meta_event";
+    MetaEvent
 }

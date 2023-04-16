@@ -6,17 +6,22 @@
 public enum GroupUserRole
 {
     /// <summary>
-    /// 群主
+    /// 未知
     /// </summary>
-    Owner,
-
-    /// <summary>
-    /// 管理
-    /// </summary>
-    Admin,
+    Unknow = -1,
 
     /// <summary>
     /// 普通
     /// </summary>
-    Normal
+    Normal = 0x00,
+
+    /// <summary>
+    /// 管理
+    /// </summary>
+    Admin = 0x01,
+
+    /// <summary>
+    /// 群主
+    /// </summary>
+    Owner = 0x10,
 }

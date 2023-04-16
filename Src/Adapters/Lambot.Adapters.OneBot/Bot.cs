@@ -1,20 +1,31 @@
 ﻿using Lambot.Core;
+using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 
 namespace Lambot.Adapters.OneBot;
 
 public class Bot
 {
-    private readonly Application _application;
+    private readonly LambotSocketService _sockerService;
+    private readonly HashSet<long> SuperUsers = new();
 
-    private static readonly JsonSerializerSettings _serializerSettings = new JsonSerializerSettings
+    private static readonly JsonSerializerSettings _serializerSettings = new()
     {
         NullValueHandling = NullValueHandling.Ignore,
     };
 
-    public Bot(Application application)
+    public bool IsSuperUser(long userId)
     {
-        _application = application;
+        return SuperUsers.Contains(userId);
+    }
+
+    public Bot(LambotSocketService service, IConfiguration configuration)
+    {
+        _sockerService = service;
+        configuration.GetSection("SuperUsers")?.GetChildren()?.ForEach(item =>
+        {
+            SuperUsers.Add(Convert.ToInt64(item.Value));
+        });
     }
 
     /// <summary>
@@ -31,12 +42,12 @@ public class Bot
             action = "send_group_msg",
             @params = new
             {
-                group_id = group_id,
+                group_id,
                 message = message.ToString(),
                 auto_escape = false
             }
         }, _serializerSettings);
-        await _application.SendAsync(json);
+        await _sockerService.SendAsync(json);
     }
 
     /// <summary>
@@ -59,6 +70,6 @@ public class Bot
                 auto_escape = false
             }
         }, _serializerSettings);
-        await _application.SendAsync(json);
+        await _sockerService.SendAsync(json);
     }
 }

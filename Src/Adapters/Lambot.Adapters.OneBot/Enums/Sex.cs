@@ -6,6 +6,11 @@
 public enum Sex
 {
     /// <summary>
+    /// 未知
+    /// </summary>
+    Unknow,
+
+    /// <summary>
     /// 男
     /// </summary>
     Male,
@@ -13,10 +18,5 @@ public enum Sex
     /// <summary>
     /// 女
     /// </summary>
-    Female,
-
-    /// <summary>
-    /// 未知
-    /// </summary>
-    Unknow
+    Female
 }
