@@ -1,9 +1,6 @@
 ﻿using Lambot.Core;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
-using System.Linq;
-using System.Text.RegularExpressions;
 
 namespace Lambot.Adapters.OneBot;
 
@@ -11,6 +8,7 @@ internal class OneBotEventParser : IEventParser
 {
     private readonly Bot _bot;
     private readonly ILogger<OneBotEventParser> _logger;
+
     public OneBotEventParser(ILogger<OneBotEventParser> logger, Bot bot)
     {
         _bot = bot;
@@ -63,7 +61,6 @@ internal class OneBotEventParser : IEventParser
         var raw_message = eventObj.Value<string>("raw_message");
         _logger.LogInformation("来自群 [{groupId}] 成员 [{userId}] 的{sub_type}: {raw_message}", group_id, user_id, MessageSubType.GetChinese(sub_type), raw_message);
 
-        
         return new GroupMessageEvent
         {
             GroupId = group_id,

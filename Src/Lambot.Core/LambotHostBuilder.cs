@@ -4,7 +4,6 @@ using Microsoft.Extensions.Logging;
 
 namespace Lambot.Core;
 
-
 public class LambotHostBuilder
 {
     internal LambotHostBuilder()
@@ -33,16 +32,17 @@ public class LambotHostBuilder
     /// Configuration
     /// </summary>
     public IConfiguration Configuration { get; set; }
+
     /// <summary>
     /// ServiceCollection
     /// </summary>
     public IServiceCollection Services { get; set; }
 
     public void RegisterAdapter<TAdapter>()
-         where TAdapter : class, IAdapter, new ()
+         where TAdapter : class, IAdapter, new()
     {
         var adapter = new TAdapter();
-    Console.WriteLine($"Loading LambotAdapter [{adapter.AdapterName}]");
+        Console.WriteLine($"Loading LambotAdapter [{adapter.AdapterName}]");
         adapter.ConfigureService(Services);
     }
 

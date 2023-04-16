@@ -1,10 +1,7 @@
 ﻿using Lambot.Core;
-using Lambot.Plugin;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.FileSystemGlobbing;
+using Lambot.Core.Plugin;
 using Microsoft.Extensions.Logging;
 using System.Linq.Expressions;
-using System.Text.RegularExpressions;
 
 namespace Lambot.Adapters.OneBot;
 
@@ -12,6 +9,7 @@ internal class OneBotEventMatcher : IPluginMatcher
 {
     private readonly ILogger<OneBotEventMatcher> _logger;
     private readonly LambotContext _context;
+
     public OneBotEventMatcher(ILogger<OneBotEventMatcher> logger, LambotContext context)
     {
         _logger = logger;
@@ -27,12 +25,15 @@ internal class OneBotEventMatcher : IPluginMatcher
                 case Matcher.Type.OnMessage:
                     Invoke<MessageEvent>(_context, parameter);
                     break;
+
                 case Matcher.Type.OnGroupMessage:
                     Invoke<GroupMessageEvent>(_context, parameter);
                     break;
+
                 case Matcher.Type.OnPrivateMessage:
                     Invoke<PrivateMessageEvent>(_context, parameter);
                     break;
+
                 default:
                     break;
             }

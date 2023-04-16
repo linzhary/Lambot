@@ -11,13 +11,15 @@ public static class Matcher
         /// 所有消息
         /// </summary>
         OnMessage = 0x10,
+
         /// <summary>
         /// 群组消息
         /// </summary>
         OnGroupMessage = 0x11,
+
         /// <summary>
         /// 私聊消息
         /// </summary>
         OnPrivateMessage = 0x12
-    }    
+    }
 }

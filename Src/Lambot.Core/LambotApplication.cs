@@ -2,7 +2,6 @@
 using System.Collections.Concurrent;
 using System.Net.WebSockets;
 using System.Text;
-using System.Threading;
 
 namespace Lambot.Core
 {
@@ -103,6 +102,7 @@ namespace Lambot.Core
             };
             Task.WaitAll(new Task[] { consumerTask(), receiveTask() }, cancellationToken: cancellationToken);
         }
+
         public async Task SendAsync(string message)
         {
             await _cws.SendAsync(Encoding.UTF8.GetBytes(message), WebSocketMessageType.Text, true, _cancellationToken);

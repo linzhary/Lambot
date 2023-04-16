@@ -9,10 +9,12 @@ public enum GroupUserRole
     /// 群主
     /// </summary>
     Owner,
+
     /// <summary>
     /// 管理
     /// </summary>
     Admin,
+
     /// <summary>
     /// 普通
     /// </summary>

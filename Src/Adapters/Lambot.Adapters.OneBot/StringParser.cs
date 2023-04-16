@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Lambot.Adapters.OneBot;
+﻿namespace Lambot.Adapters.OneBot;
 
 internal class StringParser
 {
@@ -12,6 +6,7 @@ internal class StringParser
     public bool IsEnd => _index >= _source.Length - 1;
     private int _index = 0;
     public char Current => _source[_index];
+
     public StringParser(string source)
     {
         _source = source;
@@ -31,6 +26,7 @@ internal class StringParser
         }
         _index = ch_index;
     }
+
     public string ReadTo(char ch, bool include = false)
     {
         var start = _index;

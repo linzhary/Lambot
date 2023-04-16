@@ -1,4 +1,4 @@
-﻿namespace Lambot.Adapters.OneBot.TypeMatchers;
+﻿namespace Lambot.Adapters.OneBot;
 
 public class OnGroupMessage : OnMessage
 {
@@ -6,5 +6,6 @@ public class OnGroupMessage : OnMessage
     {
         Priority -= 1;
     }
+
     public override int Type => (int)Matcher.Type.OnGroupMessage;
 }

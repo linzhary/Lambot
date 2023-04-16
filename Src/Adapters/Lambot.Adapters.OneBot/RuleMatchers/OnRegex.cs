@@ -1,10 +1,12 @@
-﻿using Lambot.Plugin;
+﻿using Lambot.Core.Plugin;
 using System.Text.RegularExpressions;
 
-namespace Lambot.Adapters.OneBot.RuleMatchers;
+namespace Lambot.Adapters.OneBot;
+
 public class OnRegex : RuleMatcherAttribute
 {
     private readonly string _pattern;
+
     public OnRegex(string pattern)
     {
         _pattern = _pattern.TrimStart('^').TrimEnd('$');

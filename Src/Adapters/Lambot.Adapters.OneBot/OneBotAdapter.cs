@@ -1,5 +1,5 @@
 ﻿using Lambot.Core;
-using Lambot.Plugin;
+using Lambot.Core.Plugin;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Lambot.Adapters.OneBot;

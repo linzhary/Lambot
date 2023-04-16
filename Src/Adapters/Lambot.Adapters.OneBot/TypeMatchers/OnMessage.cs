@@ -1,6 +1,6 @@
-﻿using Lambot.Plugin;
+﻿using Lambot.Core.Plugin;
 
-namespace Lambot.Adapters.OneBot.TypeMatchers;
+namespace Lambot.Adapters.OneBot;
 
 public class OnMessage : TypeMatcherAttribute
 {

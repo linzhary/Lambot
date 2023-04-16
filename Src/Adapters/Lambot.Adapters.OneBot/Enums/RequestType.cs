@@ -9,6 +9,7 @@ public enum RequestType
     /// 好友请求
     /// </summary>
     Friend,
+
     /// <summary>
     /// 加群请求
     /// </summary>

@@ -1,14 +1,11 @@
-﻿using Lambot.Plugin;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Lambot.Core.Plugin;
 
-namespace Lambot.Adapters.OneBot.RuleMatchers;
+namespace Lambot.Adapters.OneBot;
+
 public class OnContains : RuleMatcherAttribute
 {
     private readonly string _text;
+
     public OnContains(string text)
     {
         _text = text;

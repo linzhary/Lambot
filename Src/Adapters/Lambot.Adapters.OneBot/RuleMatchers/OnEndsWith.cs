@@ -1,9 +1,11 @@
-﻿using Lambot.Plugin;
+﻿using Lambot.Core.Plugin;
 
-namespace Lambot.Adapters.OneBot.RuleMatchers;
+namespace Lambot.Adapters.OneBot;
+
 public class OnEndsWith : RuleMatcherAttribute
 {
     private readonly string _text;
+
     public OnEndsWith(string text)
     {
         _text = text;
@@ -15,7 +17,7 @@ public class OnEndsWith : RuleMatcherAttribute
 
     public override bool Matched(string raw_message)
     {
-        if(string.IsNullOrWhiteSpace(raw_message)) return false;
+        if (string.IsNullOrWhiteSpace(raw_message)) return false;
         return raw_message.EndsWith(_text);
     }
 }
