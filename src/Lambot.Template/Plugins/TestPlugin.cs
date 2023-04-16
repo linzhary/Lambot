@@ -4,7 +4,8 @@ using Microsoft.Extensions.Logging;
 
 namespace Lambot.Plugins;
 
-public class TestPlugin : LambotPlugin
+[Plugin(Name = "测试", Version = "1.0.0")]
+public class TestPlugin
 {
     private readonly Bot _bot;
     private readonly ILogger<TestPlugin> _logger;

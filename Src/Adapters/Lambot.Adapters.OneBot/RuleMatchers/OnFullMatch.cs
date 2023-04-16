@@ -2,7 +2,7 @@
 
 namespace Lambot.Adapters.OneBot;
 
-public class OnFullMatch : RuleMatcherAttribute
+public class OnFullMatch : RuleMatcher
 {
     private readonly string _text;
 

@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Lambot.Core
 {
-    public class LambotApplication
+    public class Application
     {
         private ClientWebSocket _cws;
         private string _serverUrl;
@@ -13,7 +13,7 @@ namespace Lambot.Core
         private CancellationToken _cancellationToken;
         private readonly ConcurrentQueue<string> _queue = new();
 
-        public LambotApplication(IServiceProvider serviceProvider)
+        public Application(IServiceProvider serviceProvider)
         {
             _serviceProvider = serviceProvider;
         }
@@ -84,7 +84,7 @@ namespace Lambot.Core
             };
             var consumerTask = async () =>
             {
-                Console.WriteLine("开始监听消息队列");
+                Console.WriteLine("Starting Message Process Task");
                 while (!_cancellationToken.IsCancellationRequested)
                 {
                     if (!_queue.TryDequeue(out var message))

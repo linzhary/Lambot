@@ -2,16 +2,16 @@
 
 namespace Lambot.Core;
 
-internal class LambotApplicationBuilder : IApplicationBuilder
+internal class ApplicationBuilder : IApplicationBuilder
 {
     private readonly IServiceCollection _services;
 
     private static readonly CancellationTokenSource _cancellationTokenSource = new();
 
-    public LambotApplicationBuilder(IServiceCollection services)
+    public ApplicationBuilder(IServiceCollection services)
     {
         _services = services;
-        services.AddSingleton<LambotApplication>();
+        services.AddSingleton<Application>();
         services.AddScoped<LambotContext>();
     }
 
@@ -19,7 +19,7 @@ internal class LambotApplicationBuilder : IApplicationBuilder
     {
         Console.CancelKeyPress += (sender, e) => _cancellationTokenSource.Cancel();
         using var serviceProvider = _services.BuildServiceProvider();
-        var application = serviceProvider.GetRequiredService<LambotApplication>();
+        var application = serviceProvider.GetRequiredService<Application>();
         application.Start(serverUrl, _cancellationTokenSource.Token);
     }
 }

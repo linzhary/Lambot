@@ -2,7 +2,7 @@
 
 namespace Lambot.Adapters.OneBot;
 
-public class OnMessage : TypeMatcherAttribute
+public class OnMessage : TypeMatcher
 {
     public override int Type => (int)Matcher.Type.OnMessage;
 }

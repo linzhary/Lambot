@@ -2,9 +2,9 @@
 
 public class PluginMatcherParameter
 {
-    public TypeMatcherAttribute TypeMatcher { get; set; }
-    public RuleMatcherAttribute RuleMatcher { get; set; }
-    public LambotPluginInfo PluginInfo { get; set; }
+    public TypeMatcher TypeMatcher { get; set; }
+    public RuleMatcher RuleMatcher { get; set; }
+    public PluginTypeInfo PluginInfo { get; set; }
     public LambotEvent Event { get; set; }
     public object PluginInstance { get; set; }
 

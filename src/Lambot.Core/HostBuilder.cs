@@ -4,9 +4,9 @@ using Microsoft.Extensions.Logging;
 
 namespace Lambot.Core;
 
-public class LambotHostBuilder
+public class HostBuilder
 {
-    internal LambotHostBuilder()
+    internal HostBuilder()
     {
         Configuration = new ConfigurationBuilder()
             .AddJsonFile("appsettings.json", true, true)
@@ -48,6 +48,6 @@ public class LambotHostBuilder
 
     public IApplicationBuilder Build()
     {
-        return new LambotApplicationBuilder(Services);
+        return new ApplicationBuilder(Services);
     }
 }

@@ -3,7 +3,7 @@ using System.Text.RegularExpressions;
 
 namespace Lambot.Adapters.OneBot;
 
-public class OnRegex : RuleMatcherAttribute
+public class OnRegex : RuleMatcher
 {
     private readonly string _pattern;
 

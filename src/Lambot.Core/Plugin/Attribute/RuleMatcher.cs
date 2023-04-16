@@ -1,7 +1,7 @@
 ﻿namespace Lambot.Core.Plugin;
 
 [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
-public abstract class RuleMatcherAttribute : Attribute
+public abstract class RuleMatcher : Attribute
 {
     public readonly string Id = Guid.NewGuid().ToString("n");
 

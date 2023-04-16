@@ -1,7 +1,7 @@
 ﻿namespace Lambot.Core.Plugin;
 
 [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
-public abstract class TypeMatcherAttribute : Attribute
+public abstract class TypeMatcher : Attribute
 {
     public readonly string Id = Guid.NewGuid().ToString("n");
 

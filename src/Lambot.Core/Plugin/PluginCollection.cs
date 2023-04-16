@@ -4,16 +4,17 @@ using System.Reflection;
 
 namespace Lambot.Core.Plugin;
 
-internal class LambotPluginCollection : IPluginCollection
+internal class PluginCollection : IPluginCollection
 {
-    internal static List<TypeMatcherAttribute> _typeMatcherList = new();
-    internal static readonly ConcurrentDictionary<string, RuleMatcherAttribute> _ruleMatcherMap = new();
-    internal static readonly ConcurrentDictionary<string, LambotPluginInfo> _pluginInfoMap = new();
+    internal static List<TypeMatcher> _typeMatcherList = new();
+    internal static readonly ConcurrentDictionary<string, PluginAttribute> _pluginAttrMap = new();
+    internal static readonly ConcurrentDictionary<string, RuleMatcher> _ruleMatcherMap = new();
+    internal static readonly ConcurrentDictionary<string, PluginTypeInfo> _pluginInfoMap = new();
     private readonly IPluginMatcher _pluginMatcher;
     private readonly LambotContext _context;
     private readonly IServiceProvider _serviceProvider;
 
-    public LambotPluginCollection(IPluginMatcher pluginMatcher, LambotContext context, IServiceProvider serviceProvider)
+    public PluginCollection(IPluginMatcher pluginMatcher, LambotContext context, IServiceProvider serviceProvider)
     {
         _pluginMatcher = pluginMatcher;
         _context = context;
@@ -22,15 +23,15 @@ internal class LambotPluginCollection : IPluginCollection
 
     internal static void TryAdd(Type pluginType, MethodInfo methodInfo)
     {
-        var typeMatcher = methodInfo.GetCustomAttribute<TypeMatcherAttribute>();
+        var typeMatcher = methodInfo.GetCustomAttribute<TypeMatcher>();
         if (typeMatcher is null) return;
-        var ruleMatcher = methodInfo.GetCustomAttribute<RuleMatcherAttribute>();
+        var ruleMatcher = methodInfo.GetCustomAttribute<RuleMatcher>();
         if (ruleMatcher is not null)
         {
             typeMatcher.RulePrioirty = ruleMatcher.Priority;
             _ruleMatcherMap.TryAdd(typeMatcher.Id, ruleMatcher);
         }
-        _pluginInfoMap.TryAdd(typeMatcher.Id, new LambotPluginInfo
+        _pluginInfoMap.TryAdd(typeMatcher.Id, new PluginTypeInfo
         {
             Type = pluginType,
             MethodName = methodInfo.Name,

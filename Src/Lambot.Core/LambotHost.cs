@@ -2,8 +2,8 @@
 
 public static class LambotHost
 {
-    public static LambotHostBuilder CreateBuilder()
+    public static HostBuilder CreateBuilder()
     {
-        return new LambotHostBuilder();
+        return new HostBuilder();
     }
 }

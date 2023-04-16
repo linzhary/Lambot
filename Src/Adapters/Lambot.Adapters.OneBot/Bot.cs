@@ -5,14 +5,14 @@ namespace Lambot.Adapters.OneBot;
 
 public class Bot
 {
-    private readonly LambotApplication _application;
+    private readonly Application _application;
 
     private static readonly JsonSerializerSettings _serializerSettings = new JsonSerializerSettings
     {
         NullValueHandling = NullValueHandling.Ignore,
     };
 
-    public Bot(LambotApplication application)
+    public Bot(Application application)
     {
         _application = application;
     }
