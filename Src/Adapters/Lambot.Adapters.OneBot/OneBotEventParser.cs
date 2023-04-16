@@ -66,6 +66,7 @@ internal class OneBotEventParser : IEventParser
             UserId = user_id,
             Type = MessageType.Group,
             SubType = sub_type,
+            Message =  Message.Parse(raw_message),
             RawMessage = raw_message
         };
     }
@@ -87,6 +88,7 @@ internal class OneBotEventParser : IEventParser
             UserId = user_id,
             Type = MessageType.Private,
             SubType = sub_type,
+            Message = Message.Parse(raw_message),
             RawMessage = raw_message
         };
     }

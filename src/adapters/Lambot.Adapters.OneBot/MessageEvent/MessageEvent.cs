@@ -33,4 +33,9 @@ public class MessageEvent : LambotEvent
     /// 消息发送人
     /// </summary>
     public MessageEventSender Sender { get; set; }
+
+    /// <summary>
+    /// 类型化消息体
+    /// </summary>
+    public Message Message { get; set; }
 }
