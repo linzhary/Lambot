@@ -24,22 +24,17 @@ public static class HostBuilderExtensions
             var assembly = Assembly.LoadFrom(file);
             var plugins = assembly.GetTypes()
                  .Where(x => x.IsClass && !x.IsAbstract)
-                 .Select(x => new
-                 {
-                     PluginType = x,
-                     PluginAttr = x.GetCustomAttribute<PluginAttribute>()
-                 })
-                 .Where(x => x.PluginAttr != null)
+                 .Where(x => x.IsAssignableTo(typeof(PluginBase)))
                  .ToList();
-            foreach (var plugin in plugins)
+            foreach (var plugin in plugins) 
             {
-                builder.Services.AddScoped(plugin.PluginType);
-                var pluginAttr = plugin.PluginAttr;
-                foreach (var pluginMethod in plugin.PluginType.GetMethods())
+                builder.Services.AddScoped(plugin);
+                var pluginAttr = plugin.GetCustomAttribute<PluginInfo>();
+                foreach (var pluginMethod in plugin.GetMethods())
                 {
-                    PluginCollection.TryAdd(plugin.PluginType, pluginMethod);
+                    PluginCollection.TryAdd(plugin, pluginMethod);
                 }
-                Console.WriteLine($"Loading Plugin[{pluginAttr.Name} {pluginAttr.Version}]");
+                Console.WriteLine($"Loading Plugin[{pluginAttr?.Name ?? plugin.FullName} {pluginAttr?.Version ?? "0.0.0"}]");
             }
         }
     }

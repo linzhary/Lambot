@@ -7,7 +7,7 @@ namespace Lambot.Core.Plugin;
 internal class PluginCollection : IPluginCollection
 {
     internal static List<TypeMatcher> _typeMatcherList = new();
-    internal static readonly ConcurrentDictionary<string, PluginAttribute> _pluginAttrMap = new();
+    internal static readonly ConcurrentDictionary<string, PluginBase> _pluginAttrMap = new();
     internal static readonly ConcurrentDictionary<string, RuleMatcher> _ruleMatcherMap = new();
     internal static readonly ConcurrentDictionary<string, PluginTypeInfo> _pluginInfoMap = new();
     private readonly IPluginMatcher _pluginMatcher;

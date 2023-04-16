@@ -55,7 +55,6 @@ internal class OneBotEventParser : IEventParser
     internal GroupMessageEvent ParseGroupMessageEvent(JObject eventObj)
     {
         var group_id = eventObj.Value<int>("group_id");
-        if (group_id != 658538643) return default;
         var user_id = eventObj.Value<int>("user_id");
         var sub_type = eventObj.Value<string>("sub_type");
         var raw_message = eventObj.Value<string>("raw_message");

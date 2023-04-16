@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using System.Collections.Concurrent;
 using System.Net.WebSockets;
 using System.Text;
@@ -93,11 +94,19 @@ namespace Lambot.Core
                         continue;
                     }
                     using var scope = _serviceProvider.CreateAsyncScope();
-                    var resolver = scope.ServiceProvider.GetRequiredService<IEventParser>();
-                    var @event = resolver.Parse(message);
-                    if (@event is null) continue;
-                    var pluginCollection = scope.ServiceProvider.GetRequiredService<IPluginCollection>();
-                    pluginCollection.OnMessageAsync(@event);
+                    var logger = scope.ServiceProvider.GetService<ILogger<Application>>();
+                    try
+                    {
+                        var resolver = scope.ServiceProvider.GetRequiredService<IEventParser>();
+                        var @event = resolver.Parse(message);
+                        if (@event is null) continue;
+                        var pluginCollection = scope.ServiceProvider.GetRequiredService<IPluginCollection>();
+                        pluginCollection.OnMessageAsync(@event);
+                    }
+                    catch(Exception ex)
+                    {
+                        logger.LogError(ex, "Process Message Failure: {message}", message);
+                    }
                 }
             };
             Task.WaitAll(new Task[] { consumerTask(), receiveTask() }, cancellationToken: cancellationToken);

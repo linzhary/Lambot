@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace Lambot.Core.Plugin;
 
 [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = false)]
-public class PluginAttribute : Attribute
+public class PluginInfo : Attribute
 {
     /// <summary>
     /// 插件名称
