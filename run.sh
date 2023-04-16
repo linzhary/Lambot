@@ -1,1 +1,1 @@
-dotnet watch --project "src/Lambot/Lambot.csproj"
+dotnet watch --project "src/Lambot.Template/Lambot.Template.csproj"
