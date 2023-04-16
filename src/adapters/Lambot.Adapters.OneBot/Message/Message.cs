@@ -2,7 +2,7 @@
 
 public class Message
 {
-    public List<MessageSegment> Segments { get; private set; } = new List<MessageSegment>();
+    public List<MessageSeg> Segments { get; private set; } = new List<MessageSeg>();
 
     public static Message Parse(string raw_message)
     {
@@ -14,12 +14,12 @@ public class Message
             if (parser.Current == '[')
             {
                 var code_seg = parser.ReadTo(']', true);
-                message.Segments.Add(MessageSegment.Parse(code_seg));
+                message.Segments.Add(MessageSeg.Parse(code_seg));
             }
             else
             {
                 var text = parser.ReadTo('[');
-                message.Segments.Add(MessageSegment.Text(text));
+                message.Segments.Add(MessageSeg.Text(text));
             }
         }
         return message;
