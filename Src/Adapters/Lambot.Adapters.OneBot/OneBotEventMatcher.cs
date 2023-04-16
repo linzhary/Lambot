@@ -23,15 +23,15 @@ internal class OneBotEventMatcher : IPluginMatcher
             switch ((Matcher.Type)parameter.MatchType)
             {
                 case Matcher.Type.OnMessage:
-                    Invoke<MessageEvent>(_context, parameter);
+                    Invoke<MessageEvent>(parameter);
                     break;
 
                 case Matcher.Type.OnGroupMessage:
-                    Invoke<GroupMessageEvent>(_context, parameter);
+                    Invoke<GroupMessageEvent>(parameter);
                     break;
 
                 case Matcher.Type.OnPrivateMessage:
-                    Invoke<PrivateMessageEvent>(_context, parameter);
+                    Invoke<PrivateMessageEvent>(parameter);
                     break;
 
                 default:
@@ -44,17 +44,20 @@ internal class OneBotEventMatcher : IPluginMatcher
         }
     }
 
-    private static void Invoke<TEvent>(LambotContext context, PluginMatcherParameter parameter)
+    private void Invoke<TEvent>(PluginMatcherParameter parameter)
         where TEvent : LambotEvent
     {
         if (parameter.Event is not TEvent) return;
         if (!parameter.IsRuleMatched) return;
 
-        context.IsBreak = parameter.TypeMatcher.Break;
+        _logger.LogInformation("消息 [{message_id}] 匹配到 [{plugin__name}] 的 [{method_name}]"
+            , parameter.Event.MessageId, parameter.PluginInfo.Name, parameter.PluginTypeInfo.MethodName);
 
-        var instanceExpr = Expression.Constant(parameter.PluginInstance, parameter.PluginInfo.Type);
+        _context.IsBreak = parameter.TypeMatcher.Break;
+
+        var instanceExpr = Expression.Constant(parameter.PluginInstance, parameter.PluginTypeInfo.Type);
         var parameterExpr = Expression.Parameter(typeof(TEvent));
-        var callExpr = Expression.Call(instanceExpr, parameter.PluginInfo.MethodName, null, parameterExpr);
+        var callExpr = Expression.Call(instanceExpr, parameter.PluginTypeInfo.MethodName, null, parameterExpr);
         var lambdaExpr = Expression.Lambda<Action<TEvent>>(callExpr, parameterExpr);
         lambdaExpr.Compile().Invoke(parameter.Event as TEvent);
     }

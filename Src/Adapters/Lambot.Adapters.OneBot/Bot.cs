@@ -24,7 +24,7 @@ public class Bot
     /// <param name="group_id"></param>
     /// <param name="message"></param>
     /// <returns></returns>
-    public async Task SendGroupMessageAsync(int group_id, Message message)
+    public async Task SendGroupMessageAsync(long group_id, Message message)
     {
         var json = JsonConvert.SerializeObject(new
         {

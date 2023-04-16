@@ -8,5 +8,5 @@ public class GroupMessageEvent : MessageEvent
     /// <summary>
     /// 消息所在群
     /// </summary>
-    public int GroupId { get; set; }
+    public long GroupId { get; set; }
 }

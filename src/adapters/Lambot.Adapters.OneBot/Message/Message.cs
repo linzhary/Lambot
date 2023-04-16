@@ -4,7 +4,7 @@ public class Message
 {
     public List<MessageSeg> Segments { get; private set; } = new List<MessageSeg>();
 
-    public static Message Parse(string raw_message)
+    public static Message From(string raw_message)
     {
         var message = new Message();
 

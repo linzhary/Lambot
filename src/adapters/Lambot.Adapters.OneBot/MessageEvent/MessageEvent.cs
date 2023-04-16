@@ -5,11 +5,6 @@ namespace Lambot.Adapters.OneBot;
 public class MessageEvent : LambotEvent
 {
     /// <summary>
-    /// 消息ID
-    /// </summary>
-    public int MessageId { get; set; }
-
-    /// <summary>
     /// 消息主类型
     /// </summary>
     public string Type { get; set; }
@@ -22,12 +17,12 @@ public class MessageEvent : LambotEvent
     /// <summary>
     /// 消息时间戳(秒)
     /// </summary>
-    public int Time { get; set; }
+    public long Time { get; set; }
 
     /// <summary>
     /// 消息发送人
     /// </summary>
-    public int UserId { get; set; }
+    public long UserId { get; set; }
 
     /// <summary>
     /// 消息发送人

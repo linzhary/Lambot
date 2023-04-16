@@ -9,7 +9,7 @@ public class OnRegex : RuleMatcher
 
     public OnRegex(string pattern)
     {
-        _pattern = _pattern.TrimStart('^').TrimEnd('$');
+        _pattern = pattern.TrimStart('^').TrimEnd('$');
     }
 
     public override bool Matched(string raw_message)

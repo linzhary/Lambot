@@ -29,12 +29,15 @@ public static class HostBuilderExtensions
             foreach (var plugin in plugins) 
             {
                 builder.Services.AddScoped(plugin);
-                var pluginAttr = plugin.GetCustomAttribute<PluginInfo>();
+                var pluginAttr = plugin.GetCustomAttribute<PluginInfo>() ?? new PluginInfo
+                {
+                    Name = plugin.FullName,
+                };
                 foreach (var pluginMethod in plugin.GetMethods())
                 {
-                    PluginCollection.TryAdd(plugin, pluginMethod);
+                    PluginCollection.TryAdd(plugin, pluginAttr, pluginMethod);
                 }
-                Console.WriteLine($"Loading Plugin[{pluginAttr?.Name ?? plugin.FullName} {pluginAttr?.Version ?? "0.0.0"}]");
+                Console.WriteLine($"Loading Plugin[{pluginAttr.Name} {pluginAttr.Version}]");
             }
         }
     }

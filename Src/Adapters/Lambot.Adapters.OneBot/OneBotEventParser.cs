@@ -54,19 +54,21 @@ internal class OneBotEventParser : IEventParser
     /// <returns></returns>
     internal GroupMessageEvent ParseGroupMessageEvent(JObject eventObj)
     {
-        var group_id = eventObj.Value<int>("group_id");
-        var user_id = eventObj.Value<int>("user_id");
+        var message_id = eventObj.Value<long>("message_id");
+        var group_id = eventObj.Value<long>("group_id");
+        var user_id = eventObj.Value<long>("user_id");
         var sub_type = eventObj.Value<string>("sub_type");
         var raw_message = eventObj.Value<string>("raw_message");
-        _logger.LogInformation("来自群 [{groupId}] 成员 [{userId}] 的{sub_type}: {raw_message}", group_id, user_id, MessageSubType.GetChinese(sub_type), raw_message);
+        _logger.LogInformation("来自群 [{groupId}] 成员 [{userId}] 的{sub_type} [{message_id}]: {raw_message}", group_id, user_id, MessageSubType.GetChinese(sub_type), message_id, raw_message);
 
         return new GroupMessageEvent
         {
+            MessageId = message_id,
             GroupId = group_id,
             UserId = user_id,
             Type = MessageType.Group,
             SubType = sub_type,
-            Message =  Message.Parse(raw_message),
+            Message =  Message.From(raw_message),
             RawMessage = raw_message
         };
     }
@@ -78,17 +80,19 @@ internal class OneBotEventParser : IEventParser
     /// <returns></returns>
     internal PrivateMessageEvent ParsePriverMessageEvent(JObject eventObj)
     {
-        var user_id = eventObj.Value<int>("user_id");
+        var message_id = eventObj.Value<long>("message_id");
+        var user_id = eventObj.Value<long>("user_id");
         var sub_type = eventObj.Value<string>("sub_type");
         var raw_message = eventObj.Value<string>("raw_message");
-        _logger.LogInformation("来自好友 [{userId}] 的{sub_type}: {raw_message}", user_id, MessageSubType.GetChinese(sub_type), raw_message);
+        _logger.LogInformation("来自好友 [{userId}] 的{sub_type} [{message_id}]: {raw_message}", user_id, MessageSubType.GetChinese(sub_type), message_id, raw_message);
 
         return new PrivateMessageEvent
         {
+            MessageId = message_id,
             UserId = user_id,
             Type = MessageType.Private,
             SubType = sub_type,
-            Message = Message.Parse(raw_message),
+            Message = Message.From(raw_message),
             RawMessage = raw_message
         };
     }
