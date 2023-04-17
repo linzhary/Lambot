@@ -16,7 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Adapters\Lambot.Adapters.OneBot\Lambot.Adapters.OneBot.csproj" />
+    <ProjectReference Include="..\adapters\Lambot.Adapters.OneBot\Lambot.Adapters.OneBot.csproj" />
   </ItemGroup>
 
   <ItemGroup>
