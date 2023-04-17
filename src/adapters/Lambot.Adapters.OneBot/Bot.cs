@@ -37,17 +37,12 @@ public class Bot
     /// <returns></returns>
     public async Task SendGroupMessageAsync(long group_id, Message message)
     {
-        var json = JsonConvert.SerializeObject(new
+        await CallApi("send_group_msg", new
         {
-            action = "send_group_msg",
-            @params = new
-            {
-                group_id,
-                message = message.ToString(),
-                auto_escape = false
-            }
-        }, _serializerSettings);
-        await _sockerService.SendAsync(json);
+            group_id,
+            message = message.ToString(),
+            auto_escape = false
+        });
     }
 
     /// <summary>
@@ -59,16 +54,26 @@ public class Bot
     /// <returns></returns>
     public async Task SendPrivateMessageAsync(long user_id, Message message, long? group_id = null)
     {
+        await CallApi("send_private_msg", new
+        {
+            user_id,
+            group_id,
+            message = message.ToString(),
+            auto_escape = false
+        });
+    }
+    /// <summary>
+    /// 调用go-cqhttp api
+    /// </summary>
+    /// <param name="action">方法</param>
+    /// <param name="@params">参数</param>
+    /// <returns></returns>
+    public async Task CallApi(string action, object @params)
+    {
         var json = JsonConvert.SerializeObject(new
         {
-            action = "send_private_msg",
-            @params = new
-            {
-                user_id,
-                group_id,
-                message = message.ToString(),
-                auto_escape = false
-            }
+            action,
+            @params
         }, _serializerSettings);
         await _sockerService.SendAsync(json);
     }
