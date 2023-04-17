@@ -17,8 +17,12 @@ public class FastLearningPlugin : PluginBase
 
     //private const string TARGET = ".*CQ:at,qq=.*";
     private readonly FastLearningRepository _repository;
-
-    public FastLearningPlugin(IConfiguration configuration, Bot bot, FastLearningRepository repository)
+    private readonly LambotContext _context;
+    public FastLearningPlugin(
+        IConfiguration configuration,
+        Bot bot,
+        FastLearningRepository repository,
+        LambotContext context)
     {
         configuration.GetSection("AllowedGroups")?.GetChildren()?.ForEach(item =>
         {
@@ -26,6 +30,7 @@ public class FastLearningPlugin : PluginBase
         });
         _bot = bot;
         _repository = repository;
+        _context = context;
     }
 
     public bool CheckGroup(long group_id)
@@ -33,38 +38,50 @@ public class FastLearningPlugin : PluginBase
         return _allowedGroups.Contains(group_id);
     }
 
-    [OnRegex(@$"({ME}|{ANY})问(.*)你答(.*)")]
+    [OnRegex(@$"({ME}|{ANY})(问|说)(.*)你(答|说)(.*)")]
     [OnGroupMessage(Break = true, Priority = 0)]
-    public async Task AddQuestion(GroupMessageEvent evt, Group[] matchGroups)
+    public async Task<string> AddQuestion(GroupMessageEvent evt, Group[] matchGroups)
     {
-        if (!CheckGroup(evt.GroupId)) return;
+        if (!CheckGroup(evt.GroupId)) return null;
 
         var flag = matchGroups[0].Value;
-        var question = matchGroups[1].Value;
-        var answer = matchGroups[2].Value;
+        var question = matchGroups[2].Value;
+        var answer = matchGroups[4].Value;
 
         var is_admin = _bot.IsSuperUser(evt.UserId) || evt.Sender.Role >= GroupUserRole.Admin;
+        switch (flag)
+        {
+            case ME:
+                await _repository.Add(question, answer, evt.GroupId, evt.UserId);
+                break;
+            case ANY:
+                if (!is_admin) return "你没有权限添加有人问~";
+                await _repository.Add(question, answer, evt.GroupId, 0);
+                break;
+            default:
+                return "没听明白你在说什么呢~";
+        }
 
-        await _repository.Add(question, answer, evt.GroupId, evt.UserId);
-
-        await _bot.SendGroupMessageAsync(evt.GroupId, Message.Parse("我记住了~"));
+        return "我已经记住了~";
     }
 
     [OnGroupMessage(Break = true)]
-    public async Task MatchQuestion(GroupMessageEvent evt)
+    public async Task<string> MatchQuestion(GroupMessageEvent evt)
     {
-        if (!CheckGroup(evt.GroupId)) return;
+        if (!CheckGroup(evt.GroupId))
+        {
+            throw _context.Skip();
+        }
         var (state, answer) = _repository.MatchText(evt.RawMessage, evt.GroupId, evt.UserId);
         if (state)
         {
-            await _bot.SendGroupMessageAsync(evt.GroupId, Message.Parse(answer));
-            return;
+            return await Task.FromResult(answer);
         }
         (state, answer) = _repository.MatchRegex(evt.RawMessage, evt.GroupId, evt.UserId);
         if (state)
         {
-            await _bot.SendGroupMessageAsync(evt.GroupId, Message.Parse(answer));
-            return;
+            return answer;
         }
+        throw _context.Skip();
     }
 }

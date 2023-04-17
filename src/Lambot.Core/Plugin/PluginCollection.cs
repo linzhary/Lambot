@@ -10,15 +10,12 @@ internal class PluginCollection : IPluginCollection
     internal static readonly ConcurrentDictionary<string, PluginInfo> _pluginInfoMap = new();
     internal static readonly ConcurrentDictionary<string, RuleMatcher> _ruleMatcherMap = new();
     internal static readonly ConcurrentDictionary<string, MethodInfo> _methodInfoMap = new();
-    private readonly IPluginMatcher _pluginMatcher;
-    private readonly LambotContext _context;
-    private readonly IServiceProvider _serviceProvider;
 
-    public PluginCollection(IPluginMatcher pluginMatcher, LambotContext context, IServiceProvider serviceProvider)
+    private readonly IServiceProvider _rootRerviceProvier;
+
+    public PluginCollection(IServiceProvider rootServiceProvier)
     {
-        _pluginMatcher = pluginMatcher;
-        _context = context;
-        _serviceProvider = serviceProvider;
+        _rootRerviceProvier = rootServiceProvier;
     }
 
     internal static void TryAdd(PluginInfo pluginInfo, MethodInfo methodInfo)
@@ -41,22 +38,25 @@ internal class PluginCollection : IPluginCollection
             .ToList();
     }
 
-    public void OnMessageAsync(LambotEvent evt)
+    public async Task OnMessageAsync(LambotEvent evt)
     {
+        using var scope = _rootRerviceProvier.CreateAsyncScope();
+        var pluginMatcher = scope.ServiceProvider.GetRequiredService<IPluginMatcher>();
         foreach (var typeMatcher in _typeMatcherList)
         {
             var methodInfo = _methodInfoMap.GetValueOrDefault(typeMatcher.Id);
             var parameter = new PluginMatcherParameter
             {
-                TypeMatcher = typeMatcher,
-                RuleMatcher = _ruleMatcherMap.GetValueOrDefault(typeMatcher.Id),
-                PluginInfo = _pluginInfoMap.GetValueOrDefault(typeMatcher.Id),
+                Event = evt,
                 MethodInfo = methodInfo,
-                PluginInstance = _serviceProvider.GetRequiredService(methodInfo.DeclaringType),
-                Event = evt
+                TypeMatcher = typeMatcher,
+                PluginInfo = _pluginInfoMap.GetValueOrDefault(typeMatcher.Id),
+                RuleMatcher = _ruleMatcherMap.GetValueOrDefault(typeMatcher.Id),
+                Context = scope.ServiceProvider.GetRequiredService<LambotContext>(),
+                PluginInstance = scope.ServiceProvider.GetRequiredService(methodInfo.DeclaringType)
             };
-            _pluginMatcher.Invoke(parameter);
-            if (_context.IsBreak) break;
+            await pluginMatcher.InvokeAsync(parameter);
+            if (parameter.Context.IsBreaked) break;
         }
     }
 }

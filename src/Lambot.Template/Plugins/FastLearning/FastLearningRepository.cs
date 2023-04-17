@@ -8,7 +8,7 @@ namespace Lambot.Template.Plugins.FastLearning;
 
 public class FastLearningRepository
 {
-    private static readonly bool _debug = true;
+    //private static readonly bool _debug = false;
 
     private static long UnionId(long group_id, long? user_id)
     {
@@ -58,10 +58,10 @@ public class FastLearningRepository
                 else if (resolve_file)
                 {
                     img_seg.File = $"file:///{Path.GetFullPath(file).Replace('\\', '/')}";
-                    if (_debug)
-                    {
-                        img_seg.File = img_seg.File.Replace("D:/Workspace/Lambot/src/Lambot.Template/bin/Debug/net6.0/data/images", "home/bot");
-                    }
+                    //if (_debug)
+                    //{
+                    //    img_seg.File = img_seg.File.Replace("D:/Workspace/Lambot/src/Lambot.Template/bin/Debug/net6.0/data/images", "home/bot");
+                    //}
                 }
             }
             img_seg.Url = null;
@@ -76,7 +76,7 @@ public class FastLearningRepository
     public FastLearningRepository(FastLearningDbContext dbContext)
     {
         _dbContext = dbContext;
-        var records = dbContext.Record.ToList();
+        var records = dbContext.Records.ToList();
         records.ForEach(async item =>
         {
             await Add(item.Question, item.Answer, item.GroupId, item.UserId);
@@ -100,7 +100,7 @@ public class FastLearningRepository
 
         var answers = _cache.GetOrAdd(question, k => new());
         answers.TryAdd(unionId, answer);
-        var entity = await _dbContext.Record
+        var entity = await _dbContext.Records
             .Where(x => x.Question == question)
             .Where(x => x.GroupId == group_id)
             .Where(x => x.UserId == user_id)
@@ -135,17 +135,7 @@ public class FastLearningRepository
     {
         question = BeforMatch(question);
         var answers = _cache.GetValueOrDefault(question);
-        if (answers == default)
-        {
-            return (false, null);
-        }
-        var union_id = UnionId(group_id, user_id);
-        var answer = answers.GetValueOrDefault(union_id);
-        if (answer == default)
-        {
-            union_id = UnionId(group_id, 0);
-            answer = answers.GetValueOrDefault(union_id);
-        }
+        var answer = MatchAnswer(answers, group_id, user_id);
         return (answer != default, answer);
     }
 
@@ -156,10 +146,25 @@ public class FastLearningRepository
             var pattern = $"^{item.Key}$";
             var match = Regex.Match(question, pattern);
             if (!match.Success) continue;
-            var (state, answer) = MatchText(item.Key, group_id, user_id);
-            if (!state) return (false, null);
-            return (true, match.Result(answer));
+            var answer = MatchAnswer(item.Value, group_id, user_id);
+            if (answer != default)
+            {
+                return (true, match.Result(answer));
+            }
         }
         return (false, null);
+    }
+
+    public static string MatchAnswer(Dictionary<long, string> answers, long group_id, long user_id)
+    {
+        if (answers is null) return default;
+        var union_id = UnionId(group_id, user_id);
+        var answer = answers.GetValueOrDefault(union_id);
+        if (answer == default)
+        {
+            union_id = UnionId(group_id, 0);
+            answer = answers.GetValueOrDefault(union_id);
+        }
+        return answer;
     }
 }

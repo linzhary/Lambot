@@ -8,8 +8,8 @@ public class OneBotAdapter : IAdapter
 {
     public IServiceCollection ConfigureService(IServiceCollection services)
     {
-        services.AddScoped<Bot>();
-        services.AddScoped<IEventParser, OneBotEventParser>();
+        services.AddSingleton<Bot>();
+        services.AddSingleton<IEventParser, OneBotEventParser>();
         services.AddScoped<IPluginMatcher, OneBotEventMatcher>();
         return services;
     }

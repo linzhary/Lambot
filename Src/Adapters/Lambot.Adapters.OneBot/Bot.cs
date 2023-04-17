@@ -57,7 +57,7 @@ public class Bot
     /// <param name="message">要发送的内容</param>
     /// <param name="group_id">主动发起临时会话时的来源群号(可选, 机器人本身必须是管理员/群主)</param>
     /// <returns></returns>
-    public async Task SendPrivateMessageAsync(int user_id, Message message, int? group_id = null)
+    public async Task SendPrivateMessageAsync(long user_id, Message message, long? group_id = null)
     {
         var json = JsonConvert.SerializeObject(new
         {

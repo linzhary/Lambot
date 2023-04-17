@@ -11,10 +11,10 @@ var host = LambotHost.CreateDefaultBuilder(args)
             Directory.CreateDirectory("./data/database");
             Directory.CreateDirectory("./data/images");
 
-            services.AddDbContext<FastLearningDbContext>(opts =>
+            services.AddDbContextPool<FastLearningDbContext>(opts =>
             {
                 opts.UseSqlite("Data Source=./data/database/FastLearning.db");
-            }, ServiceLifetime.Scoped);
+            });
             services.AddScoped<FastLearningRepository>();
 
             //添加OneBot适配器

@@ -31,7 +31,7 @@ public class MessageEvent : LambotEvent
     [JsonIgnore]
     public Message Message { get; set; }
 
-    public MessageEvent Convert()
+    internal MessageEvent Convert()
     {
         Message = Message.Parse(RawMessage);
         return this;

@@ -2,5 +2,5 @@
 
 public interface IPluginCollection
 {
-    void OnMessageAsync(LambotEvent evt);
+    Task OnMessageAsync(LambotEvent evt);
 }

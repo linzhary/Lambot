@@ -7,17 +7,20 @@ namespace Lambot.Core;
 internal class LambotMessageHandler : BackgroundService
 {
     private readonly LambotSocketService _socketService;
-    private readonly IServiceProvider _rootServiceProvider;
     private readonly ILogger<LambotSocketListener> _logger;
+    private readonly IEventParser _eventParser;
+    private readonly IPluginCollection _pluginCollection;
 
     public LambotMessageHandler(
         LambotSocketService socketService,
         ILogger<LambotSocketListener> logger,
-        IServiceProvider rootServiceProvider)
+        IEventParser eventParser,
+        IPluginCollection pluginCollection)
     {
         _socketService = socketService;
         _logger = logger;
-        _rootServiceProvider = rootServiceProvider;
+        _eventParser = eventParser;
+        _pluginCollection = pluginCollection;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -29,14 +32,11 @@ internal class LambotMessageHandler : BackgroundService
                 await Task.Delay(100, stoppingToken);
                 continue;
             }
-            using var scope = _rootServiceProvider.CreateAsyncScope();
             try
             {
-                var resolver = scope.ServiceProvider.GetRequiredService<IEventParser>();
-                var @event = resolver.Parse(message);
+                var @event = _eventParser.Parse(message);
                 if (@event is null) continue;
-                var pluginCollection = scope.ServiceProvider.GetRequiredService<IPluginCollection>();
-                pluginCollection.OnMessageAsync(@event);
+                await _pluginCollection.OnMessageAsync(@event);
             }
             catch (Exception ex)
             {

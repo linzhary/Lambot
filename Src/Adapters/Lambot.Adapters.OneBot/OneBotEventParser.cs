@@ -26,13 +26,11 @@ public class EnumJsonConverter : JsonConverter
 
 internal class OneBotEventParser : IEventParser
 {
-    private readonly Bot _bot;
     private readonly ILogger<OneBotEventParser> _logger;
     private readonly JsonSerializer _deserializer;
 
-    public OneBotEventParser(ILogger<OneBotEventParser> logger, Bot bot)
+    public OneBotEventParser(ILogger<OneBotEventParser> logger)
     {
-        _bot = bot;
         _logger = logger;
         _deserializer = JsonSerializer.Create(new JsonSerializerSettings
         {
