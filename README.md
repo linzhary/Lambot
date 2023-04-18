@@ -1,6 +1,6 @@
 # Lambot （小羊）
 
-## 基于[Microsoft.Extensions.Hosting 7.0.1]泛型主机实现的机器人框架
+## 基于 [Microsoft.Extensions.Hosting 7.0.1] 泛型主机实现的机器人框架
 
 >使用方法参考 https://github.com/linzhary/Lambot/blob/main/Src/Lambot.Template
 
