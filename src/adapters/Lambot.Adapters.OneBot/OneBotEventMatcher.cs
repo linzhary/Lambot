@@ -126,9 +126,9 @@ internal class OneBotEventMatcher : IPluginMatcher
             {
                 var instanceExpr = Expression.Parameter(parameter.MethodInfo.DeclaringType, "instance");
                 var parameterExprs = new List<ParameterExpression>();
-                for (var i = 0; i < parameter.MethodInfo.GetParameters().Count(); i++)
+                for (var i = 0; i < parameterInfos.Count(); i++)
                 {
-                    parameterExprs.Add(Expression.Parameter(parameter.MethodInfo.GetParameters()[i].ParameterType, $"arg_{i}"));
+                    parameterExprs.Add(Expression.Parameter(parameterInfos[i].ParameterType, $"arg_{i}"));
                 }
                 var methodCallExpr = Expression.Call(instanceExpr, parameter.MethodInfo, parameterExprs);
                 return Expression.Lambda(methodCallExpr, new[] { instanceExpr }.Concat(parameterExprs).ToArray()).Compile();
