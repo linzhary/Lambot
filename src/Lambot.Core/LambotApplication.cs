@@ -19,7 +19,10 @@ public class LambotApplication
         builder.Services.AddControllers().AddNewtonsoftJson();
 
         //add websocket support
-        builder.Services.AddWebSockets(_ => { });
+        builder.Services.AddWebSockets(opts =>
+        {
+            opts.KeepAliveInterval = TimeSpan.FromMilliseconds(3000);
+        });
 
         //Lambot Resource Manager
         builder.Services.AddSingleton<LambotWebSocketManager>();
