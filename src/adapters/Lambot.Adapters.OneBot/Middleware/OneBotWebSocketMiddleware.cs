@@ -16,7 +16,9 @@ public class OneBotWebSocketMiddleware : IMiddleware
 
     public async Task InvokeAsync(HttpContext context, RequestDelegate next)
     {
-        if (context.Request.Path == "/onebot/v11")
+        if (!context.Request.Path.HasValue) await next(context);
+        var requestPath = context.Request.Path.Value!;
+        if (requestPath.TrimEnd('/') == "/onebot/v11")
         {
             if (context.WebSockets.IsWebSocketRequest)
             {

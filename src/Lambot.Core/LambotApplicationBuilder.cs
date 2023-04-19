@@ -25,6 +25,9 @@ public class LambotApplicationBuilder
     public WebApplication Build()
     {
         var app = _builder.Build();
+        app.UseRouting();
+        app.UseWebSockets();
+        app.MapControllers();
         foreach (var adapter in AdapterCollection.Adapters.Values)
         {
             adapter.OnBuild(app);

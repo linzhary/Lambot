@@ -23,4 +23,4 @@ builder.Services.RegisterAdapter<OneBotAdapter>();
 //自动注册插件列表
 builder.Services.RegisterPlugins();
 
-await builder.Build().RunAsync("127.0.0.1:8080");
+await builder.Build().RunAsync("http://127.0.0.1:9527");
