@@ -5,7 +5,7 @@ namespace Lambot.Core;
 
 public class LambotWebSocketManager
 {
-    private long current_id;
+    private long currentSessionId;
     private readonly ConcurrentDictionary<long, WebSocket> _webSocketMap = new();
     private readonly ConcurrentDictionary<long, ConcurrentQueue<string>> _receivedQueueMap = new();
     private readonly ConcurrentDictionary<long, Task> _processorTaskMap = new();
@@ -18,44 +18,44 @@ public class LambotWebSocketManager
     /// <returns></returns>
     internal long Register(WebSocket webSocket)
     {
-        _receivedQueueMap.GetOrAdd(current_id, _ => new());
-        _webSocketMap.GetOrAdd(current_id, _ => webSocket);
-        return current_id++;
+        _receivedQueueMap.GetOrAdd(currentSessionId, _ => new());
+        _webSocketMap.GetOrAdd(currentSessionId, _ => webSocket);
+        return currentSessionId++;
     }
 
     /// <summary>
     /// 卸载资源
     /// </summary>
-    /// <param name="id"></param>
-    internal void UnRegister(long id)
+    /// <param name="sessionId"></param>
+    internal void UnRegister(long sessionId)
     {
-        _receivedQueueMap.TryRemove(id, out _);
-        _webSocketMap.TryRemove(id, out _);
-        if (_cancellationTokenSourceMap.TryRemove(id, out var cancellationTokenSource))
+        _receivedQueueMap.TryRemove(sessionId, out _);
+        _webSocketMap.TryRemove(sessionId, out _);
+        if (_cancellationTokenSourceMap.TryRemove(sessionId, out var cancellationTokenSource))
         {
             cancellationTokenSource.Cancel();
-            _processorTaskMap.TryRemove(id, out _);
+            _processorTaskMap.TryRemove(sessionId, out _);
         }
     }
     
     /// <summary>
     /// 消息队列
     /// </summary>
-    /// <param name="id"></param>
+    /// <param name="sessionId"></param>
     /// <returns></returns>
-    internal ConcurrentQueue<string> Queue(long id)
+    internal ConcurrentQueue<string> Queue(long sessionId)
     {
-        return _receivedQueueMap.GetOrAdd(id, _ => new());
+        return _receivedQueueMap.GetOrAdd(sessionId, _ => new());
     }
 
     /// <summary>
     /// WebSocket实例
     /// </summary>
-    /// <param name="id"></param>
+    /// <param name="sessionId"></param>
     /// <returns></returns>
-    internal WebSocket Get(long id)
+    internal WebSocket Get(long sessionId)
     {
-        if (_webSocketMap.TryGetValue(id, out var webSocket))
+        if (_webSocketMap.TryGetValue(sessionId, out var webSocket))
         {
             return webSocket;
         }
@@ -71,12 +71,18 @@ public class LambotWebSocketManager
     /// <summary>
     /// 启动一个任务
     /// </summary>
-    /// <param name="id"></param>
+    /// <param name="sessionId"></param>
     /// <param name="predicate"></param>
-    internal bool TryStartTask(long id, Func<CancellationToken, Task> predicate)
+    internal bool HandleQueue(long sessionId, Func<ConcurrentQueue<string>, Task> predicate)
     {
-        if (_processorTaskMap.ContainsKey(id)) return false;
-        var cancellationTokenSource = _cancellationTokenSourceMap.GetOrAdd(id, _ => new CancellationTokenSource());
-        return _processorTaskMap.TryAdd(id, predicate.Invoke(cancellationTokenSource.Token));
+        if (_processorTaskMap.ContainsKey(sessionId)) return false;
+        var cancellationTokenSource =  _cancellationTokenSourceMap.GetOrAdd(sessionId, _ => new CancellationTokenSource());
+        return _processorTaskMap.TryAdd(sessionId, Task.Factory.StartNew(async () =>
+        {
+            while (!cancellationTokenSource.Token.IsCancellationRequested)
+            {
+                await predicate.Invoke(this.Queue(sessionId));
+            }
+        }, cancellationTokenSource.Token));
     }
 }
