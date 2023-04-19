@@ -4,9 +4,10 @@ internal static class MessageUtils
 {
     public static object ConvertValue(object obj, Type type)
     {
+        if (obj is null) return default;
         if (obj is not string) return default;
         if (!type.IsEnum) return default;
-        var str = obj.ToString().Trim().ToPascalCase();
+        var str = ((string)obj).Trim().ToPascalCase();
         var names = Enum.GetNames(type);
         if (names.Contains(str))
         {
@@ -18,11 +19,12 @@ internal static class MessageUtils
         }
     }
 
-    public static T ConvertTo<T>(object obj, T defaultValue) where T : struct, Enum
+    public static T ConvertTo<T>(object obj) where T : struct, Enum
     {
+        if (obj is null) return default;
         if (obj is not string) return default;
         var names = Enum.GetNames<T>();
-        var str = obj.ToString().Trim().ToPascalCase();
+        var str = ((string)obj).Trim().ToPascalCase();
         if (names.Contains(str))
         {
             return Enum.Parse<T>(str);

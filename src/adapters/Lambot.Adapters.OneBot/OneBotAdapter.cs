@@ -1,5 +1,4 @@
-﻿using Lambot.Core;
-using Lambot.Core.Adapter;
+﻿using Lambot.Core.Adapter;
 using Lambot.Core.Plugin;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
