@@ -18,7 +18,7 @@ internal static class MessageUtils
         }
     }
 
-    public static T ConvertTo<T>(object obj) where T : struct, Enum
+    public static T ConvertTo<T>(object obj, T defaultValue) where T : struct, Enum
     {
         if (obj is not string) return default;
         var names = Enum.GetNames<T>();
