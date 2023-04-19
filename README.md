@@ -2,7 +2,7 @@
 
 ## 基于 ASP.NET Core Web 主机实现的机器人框架
 
->使用方法参考 https://github.com/linzhary/Lambot/blob/main/Src/Lambot.Template
+>使用方法参考 [https://github.com/linzhary/Lambot/tree/main/src/Lambot.Template]
 
 基础用法
 ``` C#
