@@ -24,19 +24,7 @@ internal class OneBotEventMatcher : IPluginMatcher
 
     public async Task InvokeAsync(PluginMatcherParameter parameter)
     {
-        object result = null;
-        if (parameter.TypeMatcher is OnGroupMessage)
-        {
-            result = await Invoke<GroupMessageEvent>(parameter);
-        }
-        else if (parameter.TypeMatcher is OnPrivateMessage)
-        {
-            result = await Invoke<PrivateMessageEvent>(parameter);
-        }
-        else if (parameter.TypeMatcher is OnMessage)
-        {
-            result = await Invoke<MessageEvent>(parameter);
-        }
+        var result = await DyamicInvokeAsync(parameter);
         if (result is string raw_message && !string.IsNullOrEmpty(raw_message))
         {
             if (parameter.Event is GroupMessageEvent groupEvt)
@@ -48,7 +36,7 @@ internal class OneBotEventMatcher : IPluginMatcher
                 await _bot.SendPrivateMessageAsync(privateEvt.UserId, Message.Parse(raw_message), privateEvt.GroupId);
             }
         }
-        else if (result is Message message && message is not null)
+        else if (result is Message message)
         {
             if (parameter.Event is GroupMessageEvent groupEvt)
             {
@@ -62,11 +50,13 @@ internal class OneBotEventMatcher : IPluginMatcher
     }
 
     private readonly ConcurrentDictionary<MethodInfo, Delegate> _methodCache = new();
-    private async Task<object> Invoke<TEvent>(PluginMatcherParameter parameter)
-        where TEvent : LambotEvent
+    
+    private async Task<object> DyamicInvokeAsync(PluginMatcherParameter parameter)
     {
-        if (parameter.Event is not TEvent) return null;
-        if (!parameter.IsRuleMatched) return null;
+        if (!parameter.IsTypeChecked) return null;
+        if (!parameter.IsRuleChecked) return null;
+        if (!parameter.IsPermChecked) return null;
+        
         _logger.LogInformation("消息 [{message_id}] 匹配到 [{plugin__name}] 的 [{method_name}]"
             , parameter.Event.MessageId, parameter.PluginInfo.Name, parameter.MethodInfo.Name);
 
@@ -84,7 +74,7 @@ internal class OneBotEventMatcher : IPluginMatcher
             {
                 parameterValues.Add(_context);
             }
-            else if (parameterInfo.ParameterType.IsAssignableTo(typeof(TEvent)))
+            else if (parameterInfo.ParameterType.IsAssignableTo(typeof(LambotEvent)))
             {
                 parameterValues.Add(parameter.Event);
             }
@@ -124,7 +114,7 @@ internal class OneBotEventMatcher : IPluginMatcher
         {
             return await _methodCache.GetOrAdd(parameter.MethodInfo, (_) =>
             {
-                var instanceExpr = Expression.Parameter(parameter.MethodInfo.DeclaringType, "instance");
+                var instanceExpr = Expression.Parameter(parameter.MethodInfo.DeclaringType!, "instance");
                 var parameterExprs = new List<ParameterExpression>();
                 for (var i = 0; i < parameterInfos.Count(); i++)
                 {

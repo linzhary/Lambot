@@ -1,8 +1,9 @@
-﻿using Lambot.Core.Plugin;
+﻿using Lambot.Core;
+using Lambot.Core.Plugin;
 
 namespace Lambot.Adapters.OneBot;
 
-public class OnContains : RuleMatcher
+public sealed class OnContains : RuleMatcher
 {
     private readonly string _text;
 
@@ -15,9 +16,9 @@ public class OnContains : RuleMatcher
         }
     }
 
-    public override bool Matched(string raw_message)
+    public override bool Check(LambotEvent evt)
     {
-        if (string.IsNullOrWhiteSpace(raw_message)) return false;
-        return raw_message.Contains(_text);
+        if (string.IsNullOrWhiteSpace(evt.RawMessage)) return false;
+        return evt.RawMessage.Contains(_text);
     }
 }

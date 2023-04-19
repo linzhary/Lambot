@@ -1,5 +1,6 @@
 ﻿using Lambot.Core.Plugin;
 using System.Text.RegularExpressions;
+using Lambot.Core;
 
 namespace Lambot.Adapters.OneBot;
 
@@ -13,10 +14,10 @@ public class OnRegex : RuleMatcher
         _pattern = pattern.TrimStart('^').TrimEnd('$');
     }
 
-    public override bool Matched(string raw_message)
+    public override bool Check(LambotEvent evt)
     {
-        if (string.IsNullOrWhiteSpace(raw_message)) return false;
-        MatchResult = Regex.Match(raw_message, $"^{_pattern}$", RegexOptions.IgnoreCase | RegexOptions.Singleline);
+        if (string.IsNullOrWhiteSpace(evt.RawMessage)) return false;
+        MatchResult = Regex.Match(evt.RawMessage, $"^{_pattern}$", RegexOptions.IgnoreCase | RegexOptions.Singleline);
         return MatchResult.Success;
     }
 }

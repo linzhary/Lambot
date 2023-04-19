@@ -6,17 +6,36 @@ public class PluginMatcherParameter
 {
     public TypeMatcher TypeMatcher { get; internal set; }
     public RuleMatcher RuleMatcher { get; internal set; }
+    public PermMatcher PermMatcher {  get; internal set; }
     public MethodInfo MethodInfo { get; internal set; }
     public PluginInfo PluginInfo { get; internal set; }
     public LambotEvent Event { get; internal set; }
     public object PluginInstance { get; internal set; }
 
-    public bool IsRuleMatched
+    public bool IsTypeChecked
+    {
+        get
+        {
+            if (TypeMatcher is null) return true;
+            return TypeMatcher.Check(Event);
+        }
+    }
+    
+    public bool IsRuleChecked
     {
         get
         {
             if (RuleMatcher is null) return true;
-            return RuleMatcher.Matched(Event.RawMessage);
+            return RuleMatcher.Check(Event);
+        }
+    }
+
+    public bool IsPermChecked
+    {
+        get
+        {
+            if (PermMatcher is null) return true;
+            return PermMatcher.Check(Event);
         }
     }
 
