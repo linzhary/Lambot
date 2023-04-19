@@ -38,13 +38,14 @@ internal class PluginCollection : IPluginCollection
             .ToList();
     }
 
-    public async Task OnMessageAsync(LambotEvent evt)
+    public async Task OnMessageAsync(string serviceId, LambotEvent evt)
     {
         using var scope = _rootRerviceProvier.CreateAsyncScope();
         var pluginMatcher = scope.ServiceProvider.GetRequiredService<IPluginMatcher>();
         foreach (var typeMatcher in _typeMatcherList)
         {
             var methodInfo = _methodInfoMap.GetValueOrDefault(typeMatcher.Id);
+            if (methodInfo?.DeclaringType is null) continue;
             var parameter = new PluginMatcherParameter
             {
                 Event = evt,
@@ -55,6 +56,7 @@ internal class PluginCollection : IPluginCollection
                 Context = scope.ServiceProvider.GetRequiredService<LambotContext>(),
                 PluginInstance = scope.ServiceProvider.GetRequiredService(methodInfo.DeclaringType)
             };
+            parameter.Context.ServiceId = serviceId;
             await pluginMatcher.InvokeAsync(parameter);
             if (parameter.Context.IsBreaked) break;
         }

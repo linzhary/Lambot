@@ -1,4 +1,6 @@
-﻿namespace Lambot.Adapters.OneBot;
+﻿using Lambot.Core;
+
+namespace Lambot.Adapters.OneBot;
 
 public abstract class MessageSeg
 {
@@ -20,11 +22,12 @@ public abstract class MessageSeg
     public static MessageSeg Parse(string code_seg)
     {
         var sections = code_seg[4..^1].Split(',');
-        var type = Enum.Parse<MessageSegType>(sections[0].ToPascalCase());
-        if (type == MessageSegType.Text)
+        MessageSegType type;
+        if (!Enum.TryParse<MessageSegType>(sections[0].ToPascalCase(), true, out type))
         {
             return new TextMessageSeg { Text = code_seg };
         }
+
         var props = new Dictionary<string, string>();
         foreach (var section in sections[1..])
         {

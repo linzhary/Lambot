@@ -1,4 +1,5 @@
 ﻿using Lambot.Core;
+using Lambot.Core.Adapter;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -38,7 +39,7 @@ internal class OneBotEventParser : IEventParser
             {
                 NamingStrategy = new SnakeCaseNamingStrategy()
             },
-            Converters = new[] { new EnumJsonConverter() }
+            Converters = new JsonConverter[] { new EnumJsonConverter() }
         });
     }
 

@@ -1,24 +1,18 @@
-﻿using Lambot.Core.Plugin;
+﻿using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
-using System.Reflection;
 
-namespace Lambot.Core;
+namespace Lambot.Core.Plugin;
 
 public static class ServiceCollectionExtensions
 {
-    public static IServiceCollection RegisterAdapter<TAdapter>(this IServiceCollection services)
-         where TAdapter : class, IAdapter, new()
-    {
-        var adapter = new TAdapter();
-        Console.WriteLine($"Loading LambotAdapter [{adapter.AdapterName}]");
-        return adapter.ConfigureService(services);
-    }
-
+    
     public static void RegisterPlugins(this IServiceCollection services)
     {
         services.AddSingleton<IPluginCollection, PluginCollection>();
         var entryAssembly = Assembly.GetEntryAssembly();
+        if (entryAssembly is null) return;
         var directory = Path.GetDirectoryName(entryAssembly.Location);
+        if(directory is null) return;
         foreach (var file in Directory.GetFiles(directory, "*.dll"))
         {
             var fileName = Path.GetFileName(file);
@@ -31,9 +25,9 @@ public static class ServiceCollectionExtensions
 
             var assembly = Assembly.LoadFrom(file);
             var plugins = assembly.GetTypes()
-                 .Where(x => x.IsClass && !x.IsAbstract)
-                 .Where(x => x.IsAssignableTo(typeof(PluginBase)))
-                 .ToList();
+                .Where(x => x.IsClass && !x.IsAbstract)
+                .Where(x => x.IsAssignableTo(typeof(PluginBase)))
+                .ToList();
             foreach (var plugin in plugins)
             {
                 services.AddScoped(plugin);

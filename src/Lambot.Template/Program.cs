@@ -1,26 +1,26 @@
 ﻿using Lambot.Adapters.OneBot;
 using Lambot.Core;
+using Lambot.Core.Adapter;
+using Lambot.Core.Plugin;
 using Lambot.Template.Plugins.FastLearning;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 
-var host = LambotHost.CreateDefaultBuilder(args)
-        .ConfigureServices(services =>
-        {
-            Directory.CreateDirectory("./data/database");
-            Directory.CreateDirectory("./data/images");
+var builder = LambotApplication.CreateBuilder(args);
 
-            services.AddDbContextPool<FastLearningDbContext>(opts =>
-            {
-                opts.UseSqlite("Data Source=./data/database/FastLearning.db");
-            });
-            services.AddScoped<FastLearningRepository>();
+Directory.CreateDirectory("./data/database");
+Directory.CreateDirectory("./data/images");
 
-            //添加OneBot适配器
-            services.RegisterAdapter<OneBotAdapter>();
+builder.Services.AddDbContextPool<FastLearningDbContext>(opts =>
+{
+    opts.UseSqlite("Data Source=./data/database/FastLearning.db");
+});
+builder.Services.AddScoped<FastLearningRepository>();
 
-            //自动注册插件列表
-            services.RegisterPlugins();
-        }).Build();
-await host.RunAsync();
+//添加OneBot适配器
+builder.Services.RegisterAdapter<OneBotAdapter>();
+
+//自动注册插件列表
+builder.Services.RegisterPlugins();
+
+await builder.Build().RunAsync("http://127.0.0.1:9527");

@@ -1,4 +1,4 @@
-﻿namespace Lambot.Core;
+﻿namespace Lambot.Core.Adapter;
 
 /// <summary>
 /// 以Singleton模式注入
