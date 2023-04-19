@@ -6,9 +6,9 @@ namespace Lambot.Adapters.OneBot;
 
 public class OneBotWebSocketMiddleware : IMiddleware
 {
-    private readonly LambotSocketService _service;
+    private readonly LambotWebSocketService _service;
     private readonly ILogger<OneBotWebSocketMiddleware> _logger;
-    public OneBotWebSocketMiddleware(LambotSocketService service, ILogger<OneBotWebSocketMiddleware> logger)
+    public OneBotWebSocketMiddleware(LambotWebSocketService service, ILogger<OneBotWebSocketMiddleware> logger)
     {
         _service = service;
         _logger = logger;

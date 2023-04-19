@@ -6,7 +6,7 @@ namespace Lambot.Adapters.OneBot;
 
 public class Bot
 {
-    private readonly LambotSocketService _sockerService;
+    private readonly LambotWebSocketService _webSockerService;
     private readonly HashSet<long> SuperUsers = new();
 
     private static readonly JsonSerializerSettings _serializerSettings = new()
@@ -19,9 +19,9 @@ public class Bot
         return SuperUsers.Contains(userId);
     }
 
-    public Bot(LambotSocketService service, IConfiguration configuration)
+    public Bot(LambotWebSocketService service, IConfiguration configuration)
     {
-        _sockerService = service;
+        _webSockerService = service;
         configuration.GetSection("SuperUsers")?.GetChildren()?.ForEach(item =>
         {
             SuperUsers.Add(Convert.ToInt64(item.Value));
@@ -75,6 +75,6 @@ public class Bot
             action,
             @params
         }, _serializerSettings);
-        await _sockerService.SendAsync(json);
+        await _webSockerService.SendAsync(json);
     }
 }

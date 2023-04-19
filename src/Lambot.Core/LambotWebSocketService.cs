@@ -4,14 +4,19 @@ using System.Text;
 
 namespace Lambot.Core;
 
-public class LambotSocketService
+public class LambotWebSocketService : IDisposable
 {
-    internal readonly ConcurrentQueue<string> ReceivedQueue = new();
-    internal readonly ConcurrentQueue<string> MessageSendQueue = new();
+    private readonly string _id = Guid.NewGuid().ToString("n");
     private WebSocket _websocket;
     private ArraySegment<byte> _socketBuffer = new (new byte[1024 * 4]);
     private List<byte> _messageBuffer = new ();
-    
+    private LambotResourceManager _resourceManager;
+
+    public LambotWebSocketService(LambotResourceManager resourceManager)
+    {
+        _resourceManager = resourceManager;
+    }
+
     public async Task HandleAsync(WebSocket webSocket)
     {
         _websocket = webSocket;
@@ -25,7 +30,7 @@ public class LambotSocketService
                 if (result.EndOfMessage)
                 {
                     var message = Encoding.UTF8.GetString(_messageBuffer.ToArray());
-                    this.ReceivedQueue.Enqueue(message);
+                    _resourceManager.GetOrAddReceivedQueue(this._id).Enqueue(message);
                     _messageBuffer.Clear();
                 }
             }
@@ -35,5 +40,10 @@ public class LambotSocketService
     public Task SendAsync(string message)
     {
         return _websocket.SendAsync(Encoding.UTF8.GetBytes(message), WebSocketMessageType.Text, true, CancellationToken.None);
+    }
+
+    public void Dispose()
+    {
+        _resourceManager.RemoveReceivedQueue(this._id);
     }
 }
