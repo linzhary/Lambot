@@ -7,7 +7,7 @@ namespace Lambot.Core;
 
 public class LambotWebSocketService : IDisposable
 {
-    private long _id;
+    private long _id = -1;
     private ArraySegment<byte> _socketBuffer = new(new byte[1024 * 4]);
     private List<byte> _messageBuffer = new();
     private LambotWebSocketManager _webSocketManager;
@@ -19,9 +19,10 @@ public class LambotWebSocketService : IDisposable
         _logger = logger;
     }
 
-    public async Task HandleAsync(WebSocket webSocket)
+    public async Task<bool> HandleAsync(long sessionId, WebSocket webSocket)
     {
-        this._id = _webSocketManager.Register(webSocket);
+        _id = sessionId;
+        _webSocketManager.Register(sessionId, webSocket);
         WebSocketReceiveResult result;
         do
         {
@@ -40,15 +41,17 @@ public class LambotWebSocketService : IDisposable
                 if (result.EndOfMessage)
                 {
                     var message = Encoding.UTF8.GetString(_messageBuffer.ToArray());
-                    _webSocketManager.Queue(this._id).Enqueue(message);
+                    _webSocketManager.Queue(_id).Enqueue(message);
                     _messageBuffer.Clear();
                 }
             }
         } while (result is not null && !result.CloseStatus.HasValue);
+
+        return true;
     }
 
     public void Dispose()
     {
-        _webSocketManager.UnRegister(this._id);
+        _webSocketManager.UnRegister(_id);
     }
 }

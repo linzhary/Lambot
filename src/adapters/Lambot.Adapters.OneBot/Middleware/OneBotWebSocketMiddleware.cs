@@ -6,12 +6,14 @@ namespace Lambot.Adapters.OneBot;
 
 public class OneBotWebSocketMiddleware : IMiddleware
 {
-    private readonly LambotWebSocketService _service;
+    private readonly LambotWebSocketService _webSocketService;
+    private readonly LambotWebSocketManager _webSocketManager;
     private readonly ILogger<OneBotWebSocketMiddleware> _logger;
-    public OneBotWebSocketMiddleware(LambotWebSocketService service, ILogger<OneBotWebSocketMiddleware> logger)
+    public OneBotWebSocketMiddleware(LambotWebSocketService webSocketService, ILogger<OneBotWebSocketMiddleware> logger, LambotWebSocketManager webSocketManager)
     {
-        _service = service;
+        _webSocketService = webSocketService;
         _logger = logger;
+        _webSocketManager = webSocketManager;
     }
 
     public async Task InvokeAsync(HttpContext context, RequestDelegate next)
@@ -20,12 +22,12 @@ public class OneBotWebSocketMiddleware : IMiddleware
         var requestPath = context.Request.Path.Value!;
         if (requestPath.TrimEnd('/') == "/onebot/v11")
         {
-            if (context.WebSockets.IsWebSocketRequest)
+            if (context.WebSockets.IsWebSocketRequest && _webSocketManager.TryAllocateSession(out var sessionId))
             {
                 var webSocket = await context.WebSockets.AcceptWebSocketAsync();
                 _logger.LogInformation("Receive connetion from {ipAddress}:{port}", context.Connection.RemoteIpAddress,
                     context.Connection.RemotePort);
-                await _service.HandleAsync(webSocket);
+                await _webSocketService.HandleAsync(sessionId,webSocket);
                 _logger.LogInformation("Stop connetion from {ipAddress}:{port}", context.Connection.RemoteIpAddress,
                     context.Connection.RemotePort);
             }
