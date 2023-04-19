@@ -1,6 +1,7 @@
 ﻿using System.Collections.Concurrent;
 using System.Net.WebSockets;
 using System.Text;
+using Microsoft.Extensions.Logging;
 
 namespace Lambot.Core;
 
@@ -10,10 +11,12 @@ public class LambotWebSocketService : IDisposable
     private ArraySegment<byte> _socketBuffer = new(new byte[1024 * 4]);
     private List<byte> _messageBuffer = new();
     private LambotWebSocketManager _webSocketManager;
+    private readonly ILogger<LambotWebSocketService> _logger;
 
-    public LambotWebSocketService(LambotWebSocketManager resourceManager)
+    public LambotWebSocketService(LambotWebSocketManager resourceManager, ILogger<LambotWebSocketService> logger)
     {
         _webSocketManager = resourceManager;
+        _logger = logger;
     }
 
     public async Task HandleAsync(WebSocket webSocket)
@@ -22,8 +25,16 @@ public class LambotWebSocketService : IDisposable
         WebSocketReceiveResult result;
         do
         {
-            result = await webSocket.ReceiveAsync(_socketBuffer, CancellationToken.None);
-            if (result.MessageType == WebSocketMessageType.Text && !result.CloseStatus.HasValue)
+            try
+            {
+                result = await webSocket.ReceiveAsync(_socketBuffer, CancellationToken.None);
+            }
+            catch (WebSocketException)
+            {
+                result = null;
+            }
+
+            if (result is not null && !result.CloseStatus.HasValue && result.MessageType == WebSocketMessageType.Text)
             {
                 _messageBuffer.AddRange(_socketBuffer.Slice(0, result.Count));
                 if (result.EndOfMessage)
@@ -33,7 +44,7 @@ public class LambotWebSocketService : IDisposable
                     _messageBuffer.Clear();
                 }
             }
-        } while (!result.CloseStatus.HasValue);
+        } while (result is not null && !result.CloseStatus.HasValue);
     }
 
     public void Dispose()
