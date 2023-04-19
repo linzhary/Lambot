@@ -9,6 +9,7 @@ internal class PluginCollection : IPluginCollection
     internal static List<TypeMatcher> _typeMatcherList = new();
     internal static readonly ConcurrentDictionary<string, PluginInfo> _pluginInfoMap = new();
     internal static readonly ConcurrentDictionary<string, RuleMatcher> _ruleMatcherMap = new();
+    internal static readonly ConcurrentDictionary<string, PermMatcher> _permMatcherMap = new();
     internal static readonly ConcurrentDictionary<string, MethodInfo> _methodInfoMap = new();
 
     private readonly IServiceProvider _rootRerviceProvier;
@@ -22,20 +23,24 @@ internal class PluginCollection : IPluginCollection
     {
         var typeMatcher = methodInfo.GetCustomAttribute<TypeMatcher>();
         if (typeMatcher is null) return;
-        _pluginInfoMap.TryAdd(typeMatcher.Id, pluginInfo);
-        var ruleMatcher = methodInfo.GetCustomAttribute<RuleMatcher>();
-        if (ruleMatcher is not null)
-        {
-            typeMatcher.RulePrioirty = ruleMatcher.Priority;
-            _ruleMatcherMap.TryAdd(typeMatcher.Id, ruleMatcher);
-        }
-        _methodInfoMap.TryAdd(typeMatcher.Id, methodInfo);
+        
         _typeMatcherList.Add(typeMatcher);
         _typeMatcherList = _typeMatcherList
             .OrderBy(x => x.Priority)
-            .ThenBy(x => x.RulePrioirty)
             .ThenBy(x => x.Id)
             .ToList();
+        
+        _pluginInfoMap.TryAdd(typeMatcher.Id, pluginInfo);
+        _methodInfoMap.TryAdd(typeMatcher.Id, methodInfo);
+        
+        if (methodInfo.IsDefined(typeof(RuleMatcher), true))
+        {
+            _ruleMatcherMap.TryAdd(typeMatcher.Id, methodInfo.GetCustomAttribute<RuleMatcher>());
+        }
+        if (methodInfo.IsDefined(typeof(PermMatcher), true))
+        {
+            _permMatcherMap.TryAdd(typeMatcher.Id, methodInfo.GetCustomAttribute<PermMatcher>());
+        }
     }
 
     public async Task OnMessageAsync(string serviceId, LambotEvent evt)
@@ -53,6 +58,7 @@ internal class PluginCollection : IPluginCollection
                 TypeMatcher = typeMatcher,
                 PluginInfo = _pluginInfoMap.GetValueOrDefault(typeMatcher.Id),
                 RuleMatcher = _ruleMatcherMap.GetValueOrDefault(typeMatcher.Id),
+                PermMatcher = _permMatcherMap.GetValueOrDefault(typeMatcher.Id),
                 Context = scope.ServiceProvider.GetRequiredService<LambotContext>(),
                 PluginInstance = scope.ServiceProvider.GetRequiredService(methodInfo.DeclaringType)
             };

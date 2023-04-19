@@ -29,7 +29,7 @@ public class MessageEvent : LambotEvent
     /// 收到消息的Bot Id
     /// </summary>
     public long SelfId { get; set; }
-
+    
     /// <summary>
     /// 类型化消息体
     /// </summary>

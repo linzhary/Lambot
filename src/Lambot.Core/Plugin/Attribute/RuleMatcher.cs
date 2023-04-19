@@ -10,10 +10,5 @@ public abstract class RuleMatcher : Attribute
     /// </summary>
     public virtual int Priority { get; set; } = int.MaxValue;
 
-    /// <summary>
-    /// 匹配方法实现
-    /// </summary>
-    /// <param name="raw_message"></param>
-    /// <returns></returns>
-    public abstract bool Matched(string raw_message);
+    public abstract bool Check(LambotEvent evt);
 }

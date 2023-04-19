@@ -3,25 +3,26 @@
 /// <summary>
 /// 群成员角色
 /// </summary>
+[Flags]
 public enum GroupUserRole
 {
     /// <summary>
     /// 未知
     /// </summary>
-    Unknow = -1,
+    Unknow = 0,
 
     /// <summary>
     /// 普通
     /// </summary>
-    Normal = 0x00,
+    Normal = 0x01,
 
     /// <summary>
     /// 管理
     /// </summary>
-    Admin = 0x01,
+    Admin = 0x10,
 
     /// <summary>
     /// 群主
     /// </summary>
-    Owner = 0x10,
+    Owner = 0x100,
 }

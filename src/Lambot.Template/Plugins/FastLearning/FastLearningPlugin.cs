@@ -19,6 +19,7 @@ public class FastLearningPlugin : PluginBase
     //private const string TARGET = ".*CQ:at,qq=.*";
     private readonly FastLearningRepository _repository;
     private readonly LambotContext _context;
+
     public FastLearningPlugin(
         IConfiguration configuration,
         Bot bot,
@@ -42,7 +43,8 @@ public class FastLearningPlugin : PluginBase
 
     //设置问答
     [OnRegex(@$"({ME}|{ANY})(问|说)(.*)你(答|说)(.*)")]
-    [OnGroupMessage(Break = true, Priority = 0)]
+    //[OnPermission(Role = GroupUserRole.Admin | GroupUserRole.Owner)]
+    [OnMessage(Type = MessageType.Group, Priority = 0, Break = true)]
     public async Task<string> AddQuestionAsync(GroupMessageEvent evt, Group[] matchGroups)
     {
         if (!CheckGroupPermission(evt.GroupId)) return null;
@@ -66,7 +68,7 @@ public class FastLearningPlugin : PluginBase
 
     //删除问答
     [OnRegex(@$"删除({ME}|{ANY})(问|说)(.*)")]
-    [OnGroupMessage(Break = true, Priority = 0)]
+    [OnMessage(Type = MessageType.Group, Priority = 0, Break = true)]
     public async Task<string> DelQuestionAsync(GroupMessageEvent evt, Group[] matchGroups)
     {
         if (!CheckGroupPermission(evt.GroupId)) return null;
@@ -88,28 +90,31 @@ public class FastLearningPlugin : PluginBase
     }
 
     //匹配群消息
-    [OnGroupMessage(Break = true)]
+    [OnMessage(Type = MessageType.Group, Break = true)]
     public async Task<string> MatchQuestionAsync(GroupMessageEvent evt)
     {
         if (!CheckGroupPermission(evt.GroupId))
         {
             throw _context.Skip();
         }
+
         var answer = _repository.MatchText(evt.RawMessage, evt.GroupId, evt.UserId);
         if (answer != default)
         {
             return await Task.FromResult(answer);
         }
+
         answer = _repository.MatchRegex(evt.RawMessage, evt.GroupId, evt.UserId);
         if (answer != default)
         {
             return answer;
         }
+
         throw _context.Skip();
     }
 
     [OnRegex(@$"看看({ME}|{ANY})(问|说)")]
-    [OnGroupMessage(Break = true)]
+    [OnMessage(Type = MessageType.Group, Break = true)]
     public async Task<string> ListQuestionAsync(GroupMessageEvent evt, Group[] matchGroups)
     {
         if (!CheckGroupPermission(evt.GroupId)) return null;
@@ -128,10 +133,12 @@ public class FastLearningPlugin : PluginBase
             default:
                 return "没听明白你在说什么呢~";
         }
+
         if (list is null || list.Count == 0)
         {
             return "一个问题都没有呢~";
         }
+
         var forward_list = new List<object>();
         foreach (var item in list)
         {
@@ -156,6 +163,7 @@ public class FastLearningPlugin : PluginBase
                 }
             });
         }
+
         await _bot.CallApi("send_group_forward_msg", new
         {
             group_id = evt.GroupId,

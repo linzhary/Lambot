@@ -13,10 +13,7 @@ public abstract class TypeMatcher : Attribute
     /// <summary>
     /// 是否阻断消息
     /// </summary>
-    public bool Break { get; set; } = false;
+    public bool Break { get; set; }
 
-    /// <summary>
-    /// RuleMatcher的优先级
-    /// </summary>
-    public int RulePrioirty { get; set; } = int.MaxValue;
+    public abstract bool Check(LambotEvent evt);
 }
