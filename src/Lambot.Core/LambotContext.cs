@@ -13,7 +13,7 @@ public class LambotContext
         _webSocketManager = webSocketManager;
     }
 
-    public string ServiceId { get; internal set; }
+    public long SessionId { get; internal set; }
     public bool IsBreaked { get; set; }
 
     public Exception Skip()
@@ -48,6 +48,6 @@ public class LambotContext
 
     public Task SendAsync(string message, CancellationToken? stoppingToken = null)
     {
-        return _webSocketManager.GetWebSocket(ServiceId).SendAsync(Encoding.UTF8.GetBytes(message), WebSocketMessageType.Text, true, stoppingToken ?? CancellationToken.None);
+        return _webSocketManager.Get(SessionId).SendAsync(Encoding.UTF8.GetBytes(message), WebSocketMessageType.Text, true, stoppingToken ?? CancellationToken.None);
     }
 }
