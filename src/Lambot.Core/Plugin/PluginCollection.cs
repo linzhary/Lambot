@@ -45,6 +45,7 @@ internal class PluginCollection : IPluginCollection
         foreach (var typeMatcher in _typeMatcherList)
         {
             var methodInfo = _methodInfoMap.GetValueOrDefault(typeMatcher.Id);
+            if(methodInfo?.DeclaringType is null) continue;
             var parameter = new PluginMatcherParameter
             {
                 Event = evt,

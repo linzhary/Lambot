@@ -4,7 +4,7 @@ namespace Lambot.Core;
 
 public class LambotContext
 {
-    public bool IsBreaked { get; set; } = false;
+    public bool IsBreaked { get; set; }
 
     public Exception Skip()
     {

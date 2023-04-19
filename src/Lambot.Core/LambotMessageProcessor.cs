@@ -1,19 +1,20 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Lambot.Core.Adapter;
+using Lambot.Core.Plugin;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 namespace Lambot.Core;
 
-internal class LambotMessageHandler : BackgroundService
+internal class LambotMessageProcessor : BackgroundService
 {
     private readonly LambotSocketService _socketService;
-    private readonly ILogger<LambotSocketListener> _logger;
+    private readonly ILogger<LambotMessageProcessor> _logger;
     private readonly IEventParser _eventParser;
     private readonly IPluginCollection _pluginCollection;
 
-    public LambotMessageHandler(
+    public LambotMessageProcessor(
         LambotSocketService socketService,
-        ILogger<LambotSocketListener> logger,
+        ILogger<LambotMessageProcessor> logger,
         IEventParser eventParser,
         IPluginCollection pluginCollection)
     {

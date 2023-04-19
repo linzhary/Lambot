@@ -1,4 +1,4 @@
-﻿namespace Lambot.Core;
+﻿namespace Lambot.Core.Plugin;
 
 public interface IPluginCollection
 {
