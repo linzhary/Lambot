@@ -22,7 +22,7 @@ public abstract class MessageSeg
     public static MessageSeg Parse(string code_seg)
     {
         var sections = code_seg[4..^1].Split(',');
-        TextMessageSeg type;
+        MessageSegType type;
         if (!Enum.TryParse<MessageSegType>(sections[0].ToPascalCase(), true, out type))
         {
             return new TextMessageSeg { Text = code_seg };
