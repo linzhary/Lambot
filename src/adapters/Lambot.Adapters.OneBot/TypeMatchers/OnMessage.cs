@@ -6,12 +6,12 @@ namespace Lambot.Adapters.OneBot;
 public class OnMessage : TypeMatcher
 {
     /// <summary>
-    /// 消息类型，默认或传NULL匹配所有
+    /// 消息类型，默认匹配所有
     /// </summary>
     public MessageType Type { get; set; } = MessageType.Unknow;
 
     /// <summary>
-    /// 消息子类型，默认或传NULL匹配所有
+    /// 消息子类型，默认匹配所有
     /// </summary>
     public MessageSubType SubType { get; set; } = MessageSubType.Unknow;
 

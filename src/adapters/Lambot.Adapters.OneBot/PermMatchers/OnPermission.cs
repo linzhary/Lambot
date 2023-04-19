@@ -6,17 +6,17 @@ namespace Lambot.Adapters.OneBot;
 public class OnPermission : PermMatcher
 {
     /// <summary>
-    /// 用户ID，默认或传NULL允许所有
+    /// 用户ID，默认允许所有
     /// </summary>
     public long[] Users { get; set; } = new long[0];
 
     /// <summary>
-    /// 群聊ID，默认或传NULL允许所有
+    /// 群聊ID，默认允许所有
     /// </summary>
     public long[] Groups { get; set; } = new long[0];
 
     /// <summary>
-    /// 群聊角色，默认或传NULL允许所有
+    /// 群聊角色，默认允许所有
     /// </summary>
     public GroupUserRole Role { get; set; } = GroupUserRole.Unknow;
 
