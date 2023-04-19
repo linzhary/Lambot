@@ -1,5 +1,6 @@
 ﻿using System.Collections.Concurrent;
 using System.Net.WebSockets;
+using Microsoft.Extensions.Logging;
 
 namespace Lambot.Core;
 
@@ -10,6 +11,12 @@ public class LambotWebSocketManager
     private readonly ConcurrentDictionary<long, ConcurrentQueue<string>> _receivedQueueMap = new();
     private readonly ConcurrentDictionary<long, Task> _processorTaskMap = new();
     private readonly ConcurrentDictionary<long, CancellationTokenSource> _cancellationTokenSourceMap = new();
+    private readonly ILogger<LambotWebSocketManager> _logger;
+
+    public LambotWebSocketManager(ILogger<LambotWebSocketManager> logger)
+    {
+        _logger = logger;
+    }
 
     /// <summary>
     /// 注册资源
@@ -20,6 +27,7 @@ public class LambotWebSocketManager
     {
         _receivedQueueMap.GetOrAdd(currentSessionId, _ => new());
         _webSocketMap.GetOrAdd(currentSessionId, _ => webSocket);
+        _logger.LogInformation("register resource of {id} from [LambotWebSocketManager]", currentSessionId);
         return currentSessionId++;
     }
 
@@ -29,6 +37,7 @@ public class LambotWebSocketManager
     /// <param name="sessionId"></param>
     internal void UnRegister(long sessionId)
     {
+        _logger.LogInformation("unRegister resource of {id} from [LambotWebSocketManager]", sessionId);
         _receivedQueueMap.TryRemove(sessionId, out _);
         _webSocketMap.TryRemove(sessionId, out _);
         if (_cancellationTokenSourceMap.TryRemove(sessionId, out var cancellationTokenSource))
