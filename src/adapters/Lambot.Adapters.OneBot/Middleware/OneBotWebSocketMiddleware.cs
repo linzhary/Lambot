@@ -26,6 +26,8 @@ public class OneBotWebSocketMiddleware : IMiddleware
                 _logger.LogInformation("Receive connetion from {ipAddress}:{port}", context.Connection.RemoteIpAddress,
                     context.Connection.RemotePort);
                 await _service.HandleAsync(webSocket);
+                _logger.LogInformation("Stop connetion from {ipAddress}:{port}", context.Connection.RemoteIpAddress,
+                    context.Connection.RemotePort);
             }
             else
             {
