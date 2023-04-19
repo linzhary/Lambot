@@ -43,7 +43,7 @@ public class FastLearningPlugin : PluginBase
 
     //设置问答
     [OnRegex(@$"({ME}|{ANY})(问|说)(.*)你(答|说)(.*)")]
-    [OnPermission(Role = GroupUserRole.Admin | GroupUserRole.Owner)]
+    //[OnPermission(Role = GroupUserRole.Admin | GroupUserRole.Owner)]
     [OnMessage(Type = MessageType.Group, Priority = 0, Break = true)]
     public async Task<string> AddQuestionAsync(GroupMessageEvent evt, Group[] matchGroups)
     {
