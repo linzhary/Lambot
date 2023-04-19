@@ -7,43 +7,37 @@ namespace Lambot.Core;
 public class LambotWebSocketService : IDisposable
 {
     private readonly string _id = Guid.NewGuid().ToString("n");
-    private WebSocket _websocket;
-    private ArraySegment<byte> _socketBuffer = new (new byte[1024 * 4]);
-    private List<byte> _messageBuffer = new ();
-    private LambotResourceManager _resourceManager;
+    private ArraySegment<byte> _socketBuffer = new(new byte[1024 * 4]);
+    private List<byte> _messageBuffer = new();
+    private LambotWebSocketManager _webSocketManager;
 
-    public LambotWebSocketService(LambotResourceManager resourceManager)
+    public LambotWebSocketService(LambotWebSocketManager resourceManager)
     {
-        _resourceManager = resourceManager;
+        _webSocketManager = resourceManager;
     }
 
     public async Task HandleAsync(WebSocket webSocket)
     {
-        _websocket = webSocket;
+        _webSocketManager.Register(this._id, webSocket);
         WebSocketReceiveResult result;
         do
         {
-            result = await _websocket.ReceiveAsync(_socketBuffer, CancellationToken.None);
+            result = await webSocket.ReceiveAsync(_socketBuffer, CancellationToken.None);
             if (result.MessageType == WebSocketMessageType.Text && !result.CloseStatus.HasValue)
             {
                 _messageBuffer.AddRange(_socketBuffer.Slice(0, result.Count));
                 if (result.EndOfMessage)
                 {
                     var message = Encoding.UTF8.GetString(_messageBuffer.ToArray());
-                    _resourceManager.GetOrAddReceivedQueue(this._id).Enqueue(message);
+                    _webSocketManager.GetOrAddReceivedQueue(this._id).Enqueue(message);
                     _messageBuffer.Clear();
                 }
             }
         } while (!result.CloseStatus.HasValue);
     }
 
-    public Task SendAsync(string message)
-    {
-        return _websocket.SendAsync(Encoding.UTF8.GetBytes(message), WebSocketMessageType.Text, true, CancellationToken.None);
-    }
-
     public void Dispose()
     {
-        _resourceManager.RemoveReceivedQueue(this._id);
+        _webSocketManager.RemoveReceivedQueue(this._id);
     }
 }

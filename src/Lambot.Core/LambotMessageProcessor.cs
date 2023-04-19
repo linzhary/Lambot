@@ -7,13 +7,13 @@ namespace Lambot.Core;
 
 internal class LambotMessageProcessor : BackgroundService
 {
-    private readonly LambotResourceManager _resourceService;
+    private readonly LambotWebSocketManager _resourceService;
     private readonly ILogger<LambotMessageProcessor> _logger;
     private readonly IEventParser _eventParser;
     private readonly IPluginCollection _pluginCollection;
 
     public LambotMessageProcessor(
-        LambotResourceManager resourceService,
+        LambotWebSocketManager resourceService,
         ILogger<LambotMessageProcessor> logger,
         IEventParser eventParser,
         IPluginCollection pluginCollection)
@@ -28,11 +28,11 @@ internal class LambotMessageProcessor : BackgroundService
     {
         while (!stoppingToken.IsCancellationRequested)
         {
-            await Parallel.ForEachAsync(_resourceService.AllReceivedQueues, stoppingToken, async (receivedQueue, ct) =>
+            await Parallel.ForEachAsync(_resourceService.ReceivedQueueMap, stoppingToken, async (receivedQueueEnrty, ct) =>
             {
                 while (!stoppingToken.IsCancellationRequested)
                 {
-                    if (!receivedQueue.TryDequeue(out var message))
+                    if (!receivedQueueEnrty.Value.TryDequeue(out var message))
                     {
                         await Task.Delay(100, stoppingToken);
                         continue;
@@ -42,7 +42,7 @@ internal class LambotMessageProcessor : BackgroundService
                     {
                         var @event = _eventParser.Parse(message);
                         if (@event is null) continue;
-                        await _pluginCollection.OnMessageAsync(@event);
+                        await _pluginCollection.OnMessageAsync(receivedQueueEnrty.Key, @event);
                     }
                     catch (Exception ex)
                     {
