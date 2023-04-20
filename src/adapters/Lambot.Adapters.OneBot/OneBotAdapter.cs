@@ -9,9 +9,9 @@ public class OneBotAdapter : IAdapter
 {
     public void OnConfigureService(IServiceCollection services)
     {
-        services.AddSingleton<IEventParser, OneBotEventParser>();
-        services.AddScoped<IPluginMatcher, OneBotEventMatcher>();
-        services.AddScoped<Bot>();
+        services.AddSingleton<OneBotEventParser>();
+        services.AddScoped<OneBotEventMatcher>();
+        services.AddScoped<OneBotClient>();
 
         //Onebot WebSocket Middleware
         services.AddScoped<OneBotWebSocketMiddleware>();
@@ -22,6 +22,5 @@ public class OneBotAdapter : IAdapter
         app.UseMiddleware<OneBotWebSocketMiddleware>();
     }
 
-    public AdapterType AdapterType => AdapterType.Onebot;
     public string AdapterName => this.GetType().Namespace;
 }

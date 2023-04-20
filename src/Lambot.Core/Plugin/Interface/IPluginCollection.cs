@@ -2,5 +2,5 @@
 
 public interface IPluginCollection
 {
-    Task OnMessageAsync(long sessionId, LambotEvent evt);
+    Task OnMessageAsync(LambotEvent evt);
 }

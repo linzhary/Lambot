@@ -25,7 +25,7 @@ public class EnumJsonConverter : JsonConverter
     }
 }
 
-internal class OneBotEventParser : IEventParser
+public class OneBotEventParser
 {
     private readonly ILogger<OneBotEventParser> _logger;
     private readonly JsonSerializer _deserializer;
@@ -48,13 +48,12 @@ internal class OneBotEventParser : IEventParser
     /// </summary>
     /// <param name="eventMessage"></param>
     /// <returns></returns>
-    public LambotEvent Parse(string eventMessage)
+    public LambotEvent Parse(JObject eventMessage)
     {
-        var eventObj = JObject.Parse(eventMessage);
-        var post_type = eventObj.Value<string>("post_type");
+        var post_type = eventMessage.Value<string>("post_type");
         return MessageUtils.ConvertTo<PostType>(post_type) switch
         {
-            PostType.Message => ParseMessageEvent(eventObj),
+            PostType.Message => ParseMessageEvent(eventMessage),
             _ => null
         };
     }

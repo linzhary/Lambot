@@ -6,14 +6,6 @@ namespace Lambot.Core;
 
 public class LambotContext
 {
-    private readonly LambotWebSocketManager _webSocketManager;
-
-    public LambotContext(LambotWebSocketManager webSocketManager)
-    {
-        _webSocketManager = webSocketManager;
-    }
-
-    public long SessionId { get; internal set; }
     public bool IsBreaked { get; set; }
 
     public Exception Skip()
@@ -40,14 +32,10 @@ public class LambotContext
         {
             IsBreaked = @break.Value;
         }
+
         return new LambotContextException(message)
         {
             IsFinish = true
         };
-    }
-
-    public Task SendAsync(string message, CancellationToken? stoppingToken = null)
-    {
-        return _webSocketManager.Get(SessionId).SendAsync(Encoding.UTF8.GetBytes(message), WebSocketMessageType.Text, true, stoppingToken ?? CancellationToken.None);
     }
 }

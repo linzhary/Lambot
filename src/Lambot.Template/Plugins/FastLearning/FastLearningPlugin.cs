@@ -11,7 +11,7 @@ namespace Lambot.Template.Plugins.FastLearning;
 public class FastLearningPlugin : PluginBase
 {
     private readonly HashSet<long> _allowedGroups = new();
-    private readonly Bot _bot;
+    private readonly OneBotClient _oneBotClient;
 
     private const string ME = "我";
     private const string ANY = "有人";
@@ -22,7 +22,7 @@ public class FastLearningPlugin : PluginBase
 
     public FastLearningPlugin(
         IConfiguration configuration,
-        Bot bot,
+        OneBotClient oneBotClient,
         FastLearningRepository repository,
         LambotContext context)
     {
@@ -30,7 +30,7 @@ public class FastLearningPlugin : PluginBase
         {
             _allowedGroups.Add(Convert.ToInt64(item.Value));
         });
-        _bot = bot;
+        _oneBotClient = oneBotClient;
         _repository = repository;
         _context = context;
     }
@@ -53,7 +53,7 @@ public class FastLearningPlugin : PluginBase
         var question = matchGroups[2].Value;
         var answer = matchGroups[4].Value;
 
-        var is_admin = _bot.IsSuperUser(evt.UserId) || evt.Sender.Role >= GroupUserRole.Admin;
+        var is_admin = evt.Sender.Role >= GroupUserRole.Admin;
         switch (flag)
         {
             case ME:
@@ -76,7 +76,7 @@ public class FastLearningPlugin : PluginBase
         var flag = matchGroups[0].Value;
         var question = matchGroups[2].Value;
 
-        var is_admin = _bot.IsSuperUser(evt.UserId) || evt.Sender.Role >= GroupUserRole.Admin;
+        var is_admin = evt.Sender.Role >= GroupUserRole.Admin;
         switch (flag)
         {
             case ME:
@@ -120,8 +120,7 @@ public class FastLearningPlugin : PluginBase
         if (!CheckGroupPermission(evt.GroupId)) return null;
 
         var flag = matchGroups[0].Value;
-        var is_admin = _bot.IsSuperUser(evt.UserId) || evt.Sender.Role >= GroupUserRole.Admin;
-        var list = default(List<FastLearningRecord>);
+        List<FastLearningRecord> list;
         switch (flag)
         {
             case ME:
@@ -164,7 +163,7 @@ public class FastLearningPlugin : PluginBase
             });
         }
 
-        await _bot.CallApi("send_group_forward_msg", new
+        await _oneBotClient.SendAsync("send_group_forward_msg", new
         {
             group_id = evt.GroupId,
             messages = forward_list

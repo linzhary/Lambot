@@ -26,18 +26,6 @@ public class LambotApplication
             opts.KeepAliveInterval = TimeSpan.FromMilliseconds(3000);
         });
 
-        //Lambot Resource Manager
-        builder.Services.AddSingleton<LambotWebSocketManager>();
-
-        //Lambot WebSocket Request Middleware
-        builder.Services.AddScoped<LambotContext>();
-
-        //Lambot WebSocket Service
-        builder.Services.AddScoped<LambotWebSocketService>();
-
-        //Lambot WebSocket Message Processor
-        builder.Services.AddHostedService<LambotMessageProcessor>();
-
         return new LambotApplicationBuilder(builder);
     }
 }

@@ -10,7 +10,7 @@ public static class ServiceCollectionExtensions
          where TAdapter : class, IAdapter, new()
     {
         var adapter =  new TAdapter();
-        if (AdapterCollection.Adapters.TryAdd(adapter.AdapterType, adapter))
+        if (AdapterCollection.Adapters.TryAdd(typeof(TAdapter), adapter))
         {
             Console.WriteLine($"Loading LambotAdapter [{adapter.AdapterName}]");
             adapter.OnConfigureService(services);

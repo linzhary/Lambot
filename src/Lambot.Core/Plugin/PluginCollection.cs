@@ -43,7 +43,7 @@ internal class PluginCollection : IPluginCollection
         }
     }
 
-    public async Task OnMessageAsync(long sessionId, LambotEvent evt)
+    public async Task OnMessageAsync(LambotEvent evt)
     {
         using var scope = _rootRerviceProvier.CreateAsyncScope();
         var pluginMatcher = scope.ServiceProvider.GetRequiredService<IPluginMatcher>();
@@ -62,7 +62,6 @@ internal class PluginCollection : IPluginCollection
                 Context = scope.ServiceProvider.GetRequiredService<LambotContext>(),
                 PluginInstance = scope.ServiceProvider.GetRequiredService(methodInfo.DeclaringType)
             };
-            parameter.Context.SessionId = sessionId;
             await pluginMatcher.InvokeAsync(parameter);
             if (parameter.Context.IsBreaked) break;
         }

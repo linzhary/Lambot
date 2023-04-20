@@ -9,17 +9,17 @@ using System.Text.RegularExpressions;
 
 namespace Lambot.Adapters.OneBot;
 
-internal class OneBotEventMatcher : IPluginMatcher
+internal class OneBotEventMatcher
 {
     private readonly ILogger<OneBotEventMatcher> _logger;
     private readonly LambotContext _context;
-    private readonly Bot _bot;
+    private readonly OneBotClient _oneBotClient;
 
-    public OneBotEventMatcher(ILogger<OneBotEventMatcher> logger, LambotContext context, Bot bot)
+    public OneBotEventMatcher(ILogger<OneBotEventMatcher> logger, LambotContext context, OneBotClient oneBotClient)
     {
         _logger = logger;
         _context = context;
-        _bot = bot;
+        _oneBotClient = oneBotClient;
     }
 
     public async Task InvokeAsync(PluginMatcherParameter parameter)
@@ -29,22 +29,22 @@ internal class OneBotEventMatcher : IPluginMatcher
         {
             if (parameter.Event is GroupMessageEvent groupEvt)
             {
-                await _bot.SendGroupMessageAsync(groupEvt.GroupId, Message.Parse(raw_message));
+                await _oneBotClient.SendGroupMessageAsync(groupEvt.GroupId, Message.Parse(raw_message));
             }
             else if (parameter.Event is PrivateMessageEvent privateEvt)
             {
-                await _bot.SendPrivateMessageAsync(privateEvt.UserId, Message.Parse(raw_message), privateEvt.GroupId);
+                await _oneBotClient.SendPrivateMessageAsync(privateEvt.UserId, Message.Parse(raw_message), privateEvt.GroupId);
             }
         }
         else if (result is Message message)
         {
             if (parameter.Event is GroupMessageEvent groupEvt)
             {
-                await _bot.SendGroupMessageAsync(groupEvt.GroupId, message);
+                await _oneBotClient.SendGroupMessageAsync(groupEvt.GroupId, message);
             }
             else if (parameter.Event is PrivateMessageEvent privateEvt)
             {
-                await _bot.SendPrivateMessageAsync(privateEvt.UserId, message, privateEvt.GroupId);
+                await _oneBotClient.SendPrivateMessageAsync(privateEvt.UserId, message, privateEvt.GroupId);
             }
         }
     }
@@ -66,9 +66,9 @@ internal class OneBotEventMatcher : IPluginMatcher
         var parameterInfos = parameter.MethodInfo.GetParameters();
         foreach (var parameterInfo in parameterInfos)
         {
-            if (parameterInfo.ParameterType.IsAssignableTo(typeof(Bot)))
+            if (parameterInfo.ParameterType.IsAssignableTo(typeof(OneBotClient)))
             {
-                parameterValues.Add(_bot);
+                parameterValues.Add(_oneBotClient);
             }
             else if (parameterInfo.ParameterType.IsAssignableTo(typeof(LambotContext)))
             {
