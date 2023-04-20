@@ -165,7 +165,7 @@ public class OneBotClient
     /// 启动一个消息接收任务
     /// </summary>
     /// <returns></returns>
-    public Task BeginMessageReceiveTask()
+    internal Task BeginMessageReceiveTask()
     {
         return Task.Run(async () =>
         {
@@ -199,7 +199,7 @@ public class OneBotClient
     /// 启动一个消息处理任务
     /// </summary>
     /// <returns></returns>
-    public Task BeginMessageProcessTask()
+    internal Task BeginMessageProcessTask()
     {
         return Task.Run(async () =>
         {
