@@ -45,25 +45,28 @@ internal class PluginCollection : IPluginCollection
 
     public async Task OnMessageAsync(LambotEvent evt)
     {
-        using var scope = _rootRerviceProvier.CreateAsyncScope();
-        var pluginMatcher = scope.ServiceProvider.GetRequiredService<IPluginMatcher>();
-        foreach (var typeMatcher in _typeMatcherList)
+        await Task.Factory.StartNew(async () =>
         {
-            var methodInfo = _methodInfoMap.GetValueOrDefault(typeMatcher.Id);
-            if (methodInfo?.DeclaringType is null) continue;
-            var parameter = new PluginMatcherParameter
+            using var scope = _rootRerviceProvier.CreateAsyncScope();
+            var pluginMatcher = scope.ServiceProvider.GetRequiredService<IPluginMatcher>();
+            foreach (var typeMatcher in _typeMatcherList)
             {
-                Event = evt,
-                MethodInfo = methodInfo,
-                TypeMatcher = typeMatcher,
-                PluginInfo = _pluginInfoMap.GetValueOrDefault(typeMatcher.Id),
-                RuleMatcher = _ruleMatcherMap.GetValueOrDefault(typeMatcher.Id),
-                PermMatcher = _permMatcherMap.GetValueOrDefault(typeMatcher.Id),
-                Context = scope.ServiceProvider.GetRequiredService<LambotContext>(),
-                PluginInstance = scope.ServiceProvider.GetRequiredService(methodInfo.DeclaringType)
-            };
-            await pluginMatcher.InvokeAsync(parameter);
-            if (parameter.Context.IsBreaked) break;
-        }
+                var methodInfo = _methodInfoMap.GetValueOrDefault(typeMatcher.Id);
+                if (methodInfo?.DeclaringType is null) continue;
+                var parameter = new PluginMatcherParameter
+                {
+                    Event = evt,
+                    MethodInfo = methodInfo,
+                    TypeMatcher = typeMatcher,
+                    PluginInfo = _pluginInfoMap.GetValueOrDefault(typeMatcher.Id),
+                    RuleMatcher = _ruleMatcherMap.GetValueOrDefault(typeMatcher.Id),
+                    PermMatcher = _permMatcherMap.GetValueOrDefault(typeMatcher.Id),
+                    Context = scope.ServiceProvider.GetRequiredService<LambotContext>(),
+                    PluginInstance = scope.ServiceProvider.GetRequiredService(methodInfo.DeclaringType)
+                };
+                await pluginMatcher.InvokeAsync(parameter);
+                if (parameter.Context.IsBreaked) break;
+            }
+        });
     }
 }
