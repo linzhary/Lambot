@@ -161,7 +161,7 @@ public class OneBotClient
     /// 启动一个消息接收任务
     /// </summary>
     /// <returns></returns>
-    public Task<Task> BeginReceiveTask()
+    public Task<Task> BeginReceiveTaskAsync()
     {
         return Task.Factory.StartNew(async () =>
         {

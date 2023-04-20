@@ -30,7 +30,7 @@ public class OneBotWebSocketMiddleware : IMiddleware
                 //初始化session的webSocket
                 _client.InitWebSocket(webSocket);
                 //启动消息接收任务
-                var receiveTask = _client.BeginReceiveTask();
+                var receiveTask = await _client.BeginReceiveTaskAsync();
                 //初始化账户信息
                 await _client.InitUserInfoAsync();
                 
