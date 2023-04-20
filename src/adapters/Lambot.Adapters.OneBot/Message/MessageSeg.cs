@@ -6,7 +6,7 @@ public abstract class MessageSeg
 {
     public abstract MessageSegType Type { get; }
 
-    protected abstract Dictionary<string, string> GetProps();
+    protected abstract Dictionary<string, string?> GetProps();
 
     public override string ToString()
     {
@@ -22,13 +22,12 @@ public abstract class MessageSeg
     public static MessageSeg Parse(string code_seg)
     {
         var sections = code_seg[4..^1].Split(',');
-        MessageSegType type;
-        if (!Enum.TryParse<MessageSegType>(sections[0].ToPascalCase(), true, out type))
+        if (!Enum.TryParse(sections[0].ToPascalCase(), true, out MessageSegType type))
         {
             return new TextMessageSeg { Text = code_seg };
         }
 
-        var props = new Dictionary<string, string>();
+        var props = new Dictionary<string, string?>();
         foreach (var section in sections[1..])
         {
             var kv = section.Split('=');

@@ -4,13 +4,13 @@ namespace Lambot.Core.Plugin;
 
 public class PluginMatcherParameter
 {
-    public TypeMatcher TypeMatcher { get; internal set; }
-    public RuleMatcher RuleMatcher { get; internal set; }
-    public PermMatcher PermMatcher {  get; internal set; }
-    public MethodInfo MethodInfo { get; internal set; }
-    public PluginInfo PluginInfo { get; internal set; }
-    public LambotEvent Event { get; internal set; }
-    public object PluginInstance { get; internal set; }
+    public TypeMatcher TypeMatcher { get; internal set; } = null!;
+    public RuleMatcher RuleMatcher { get; internal set; } = null!;
+    public PermMatcher PermMatcher {  get; internal set; } = null!;
+    public MethodInfo MethodInfo { get; internal set; } = null!;
+    public PluginInfo PluginInfo { get; internal set; } = null!;
+    public LambotEvent Event { get; internal set; } = null!;
+    public object PluginInstance { get; internal set; } = null!;
 
     public bool IsTypeChecked
     {
@@ -38,8 +38,6 @@ public class PluginMatcherParameter
             return PermMatcher.Check(Event);
         }
     }
-
-    public LambotContext Context { get; internal set; }
 }
 
 /// <summary>

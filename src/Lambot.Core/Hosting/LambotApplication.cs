@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.WebSockets;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Lambot.Core;
+namespace Lambot.Core.Hosting;
 
 public class LambotApplication
 {

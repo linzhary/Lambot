@@ -1,6 +1,4 @@
-using Lambot.Core;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Lambot.Adapters.OneBot;

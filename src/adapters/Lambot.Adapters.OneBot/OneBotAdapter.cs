@@ -12,12 +12,12 @@ public class OneBotAdapter : IAdapter
     public void OnConfigureService(IServiceCollection services)
     {
         services.AddSingleton<OneBotClientManager>();
-        services.AddSingleton<OneBotEventParser>();
+        services.AddSingleton<PostEventParser>();
 
         services.AddScoped<IPluginMatcher, OneBotEventMatcher>();
-        services.AddScoped<OneBotClient>(provider =>
+        services.AddScoped(provider =>
         {
-            OneBotClient client = null;
+            OneBotClient? client = null;
             var context = provider.GetRequiredService<LambotContext>();
             var clientManager = provider.GetRequiredService<OneBotClientManager>();
             if (context.ClientId > 0)
@@ -26,7 +26,7 @@ public class OneBotAdapter : IAdapter
             }
             if (client is null)
             {
-                var eventParser = provider.GetRequiredService<OneBotEventParser>();
+                var eventParser = provider.GetRequiredService<PostEventParser>();
                 var pluginCollection = provider.GetRequiredService<IPluginCollection>();
                 var logger = provider.GetRequiredService<ILogger<OneBotClient>>();
                 client = new OneBotClient(eventParser, pluginCollection, logger, clientManager);
@@ -43,5 +43,5 @@ public class OneBotAdapter : IAdapter
         app.UseMiddleware<OneBotWebSocketMiddleware>();
     }
 
-    public string AdapterName => this.GetType().Namespace;
+    public string AdapterName => this.GetType().Namespace!;
 }

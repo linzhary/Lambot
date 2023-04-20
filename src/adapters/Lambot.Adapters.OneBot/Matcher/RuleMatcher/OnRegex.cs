@@ -7,7 +7,7 @@ namespace Lambot.Adapters.OneBot;
 public class OnRegex : RuleMatcher
 {
     private readonly string _pattern;
-    internal Match MatchResult { get; private set; }
+    internal Match? MatchResult { get; private set; }
 
     public OnRegex(string pattern)
     {

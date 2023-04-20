@@ -10,16 +10,16 @@ namespace Lambot.Adapters.OneBot;
 
 public class OneBotClient
 {
-    public long UserId { get; internal set; }
-    public string Nickname { get; internal set; }
+    public long UserId { get; internal set; } = -1;
+    public string? Nickname { get; internal set; }
     private bool _receivable;
 
-    private WebSocket _webSocket;
+    private WebSocket? _webSocket;
     private readonly ArraySegment<byte> _socketBuffer = new(new byte[1024 * 4]);
     private readonly List<byte> _messageBuffer = new();
     private readonly ConcurrentQueue<string> _messageQueue = new();
     private readonly ConcurrentDictionary<string, Action<JObject>> _callbackMap = new();
-    private readonly OneBotEventParser _eventParser;
+    private readonly PostEventParser _eventParser;
     private readonly IPluginCollection _pluginCollection;
     private readonly ILogger<OneBotClient> _logger;
     private readonly OneBotClientManager _clientManager;
@@ -30,7 +30,7 @@ public class OneBotClient
     };
 
     public OneBotClient(
-        OneBotEventParser eventParser,
+        PostEventParser eventParser,
         IPluginCollection pluginCollection,
         ILogger<OneBotClient> logger,
         OneBotClientManager clientManager)
@@ -55,10 +55,10 @@ public class OneBotClient
     /// </summary>
     internal async Task InitUserInfoAsync()
     {
-        await SendAsync("get_login_info", null, messageObj =>
+        await SendAsync("get_login_info", messageObj =>
         {
-            UserId = messageObj["data"].Value<long>("user_id");
-            Nickname = messageObj["data"].Value<string>("nickname");
+            UserId = messageObj["data"]?.Value<long>("user_id") ?? -1;
+            Nickname = messageObj["data"]?.Value<string>("nickname");
             _receivable = true;
             _logger.LogInformation("init client [{user_id}] [{nickname}] success", UserId, Nickname);
             _clientManager.Add(this);
@@ -70,7 +70,7 @@ public class OneBotClient
     /// </summary>
     /// <param name="callback"></param>
     /// <returns></returns>
-    private string TryRegisterCallback(Action<JObject> callback)
+    private string? TryRegisterCallback(Action<JObject>? callback)
     {
         if (callback is null) return null;
         var echo = Guid.NewGuid().ToString();
@@ -90,12 +90,7 @@ public class OneBotClient
             return false;
         }
 
-        var echo = message.Value<string>("echo");
-        if (string.IsNullOrWhiteSpace("echo"))
-        {
-            return false;
-        }
-
+        var echo = message.Value<string>("echo")!;
         if (_callbackMap.TryGetValue(echo, out var callback))
         {
             callback.Invoke(message);
@@ -145,7 +140,28 @@ public class OneBotClient
     /// <param name="action"></param>
     /// <param name="params"></param>
     /// <param name="callback"></param>
-    public async Task SendAsync(string action, object @params, Action<JObject> callback = null)
+    public async Task SendAsync(string action, Action<JObject>? callback = null)
+    {
+        var json = JsonConvert.SerializeObject(new
+        {
+            action,
+            echo = TryRegisterCallback(callback)
+        }, _serializerSettings);
+
+        await _webSocket!.SendAsync(
+            Encoding.UTF8.GetBytes(json),
+            WebSocketMessageType.Text,
+            WebSocketMessageFlags.EndOfMessage,
+            CancellationToken.None);
+    }
+
+    /// <summary>
+    /// 调用go-cqhttp api
+    /// </summary>
+    /// <param name="action"></param>
+    /// <param name="params"></param>
+    /// <param name="callback"></param>
+    public async Task SendAsync<T>(string action, T @params, Action<JObject>? callback = null)
     {
         var json = JsonConvert.SerializeObject(new
         {
@@ -154,7 +170,7 @@ public class OneBotClient
             echo = TryRegisterCallback(callback)
         }, _serializerSettings);
 
-        await _webSocket.SendAsync(
+        await _webSocket!.SendAsync(
             Encoding.UTF8.GetBytes(json),
             WebSocketMessageType.Text,
             WebSocketMessageFlags.EndOfMessage,
@@ -169,12 +185,12 @@ public class OneBotClient
     {
         return Task.Run(async () =>
         {
-            WebSocketReceiveResult result;
+            WebSocketReceiveResult? result;
             do
             {
                 try
                 {
-                    result = await _webSocket.ReceiveAsync(_socketBuffer, CancellationToken.None);
+                    result = await _webSocket!.ReceiveAsync(_socketBuffer, CancellationToken.None);
                 }
                 catch (WebSocketException)
                 {
@@ -195,6 +211,7 @@ public class OneBotClient
             } while (result is not null && !result.CloseStatus.HasValue);
         });
     }
+
     /// <summary>
     /// 启动一个消息处理任务
     /// </summary>
@@ -214,7 +231,7 @@ public class OneBotClient
                         {
                             var @event = _eventParser.Parse(messageObj);
                             if (@event is null) continue;
-                            await _pluginCollection.OnMessageAsync(UserId, @event);
+                            await _pluginCollection.OnReceiveAsync(UserId, @event);
                         }
                     }
                     catch (Exception ex)

@@ -45,7 +45,7 @@ public class FastLearningPlugin : PluginBase
     [OnRegex(@$"({ME}|{ANY})(问|说)(.*)你(答|说)(.*)")]
     //[OnPermission(Role = GroupUserRole.Admin | GroupUserRole.Owner)]
     [OnMessage(Type = MessageType.Group, Priority = 0, Break = true)]
-    public async Task<string> AddQuestionAsync(GroupMessageEvent evt, Group[] matchGroups)
+    public async Task<string?> AddQuestionAsync(GroupMessageEvent evt, Group[] matchGroups)
     {
         if (!CheckGroupPermission(evt.GroupId)) return null;
 
@@ -69,7 +69,7 @@ public class FastLearningPlugin : PluginBase
     //删除问答
     [OnRegex(@$"删除({ME}|{ANY})(问|说)(.*)")]
     [OnMessage(Type = MessageType.Group, Priority = 0, Break = true)]
-    public async Task<string> DelQuestionAsync(GroupMessageEvent evt, Group[] matchGroups)
+    public async Task<string?> DelQuestionAsync(GroupMessageEvent evt, Group[] matchGroups)
     {
         if (!CheckGroupPermission(evt.GroupId)) return null;
 
@@ -115,7 +115,7 @@ public class FastLearningPlugin : PluginBase
 
     [OnRegex(@$"看看({ME}|{ANY})(问|说)")]
     [OnMessage(Type = MessageType.Group, Break = true)]
-    public async Task<string> ListQuestionAsync(GroupMessageEvent evt, Group[] matchGroups)
+    public async Task<string?> ListQuestionAsync(GroupMessageEvent evt, Group[] matchGroups)
     {
         if (!CheckGroupPermission(evt.GroupId)) return null;
 

@@ -1,6 +1,6 @@
 ﻿using Lambot.Adapters.OneBot;
-using Lambot.Core;
 using Lambot.Core.Adapter;
+using Lambot.Core.Hosting;
 using Lambot.Core.Plugin;
 using Lambot.Template.Plugins.FastLearning;
 using Microsoft.EntityFrameworkCore;

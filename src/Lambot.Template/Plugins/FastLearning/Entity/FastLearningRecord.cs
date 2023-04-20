@@ -7,10 +7,10 @@ namespace Lambot.Template.Plugins.FastLearning.Entity;
 public class FastLearningRecord
 {
     [Required]
-    public string Question { get; set; }
+    public string Question { get; set; } = null!;
 
     [Required]
-    public string Answer { get; set; }
+    public string Answer { get; set; } = null!;
 
     [Required]
     public long GroupId { get; set; }

@@ -1,5 +1,4 @@
 ﻿using Lambot.Core;
-using Lambot.Core.Adapter;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -7,40 +6,21 @@ using Newtonsoft.Json.Serialization;
 
 namespace Lambot.Adapters.OneBot;
 
-public class EnumJsonConverter : JsonConverter
+public class PostEventParser
 {
-    public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+    private readonly ILogger<PostEventParser> _logger;
+    private readonly JsonSerializer _deserializer = JsonSerializer.Create(new JsonSerializerSettings
     {
-        throw new NotImplementedException();
-    }
+        ContractResolver = new CamelCasePropertyNamesContractResolver
+        {
+            NamingStrategy = new SnakeCaseNamingStrategy()
+        },
+        Converters = new JsonConverter[] { new StringToEnumJsonConverter() }
+    });
 
-    public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
-    {
-        return MessageUtils.ConvertValue(reader.Value, objectType);
-    }
-
-    public override bool CanConvert(Type objectType)
-    {
-        return objectType.IsEnum;
-    }
-}
-
-public class OneBotEventParser
-{
-    private readonly ILogger<OneBotEventParser> _logger;
-    private readonly JsonSerializer _deserializer;
-
-    public OneBotEventParser(ILogger<OneBotEventParser> logger)
+    public PostEventParser(ILogger<PostEventParser> logger)
     {
         _logger = logger;
-        _deserializer = JsonSerializer.Create(new JsonSerializerSettings
-        {
-            ContractResolver = new CamelCasePropertyNamesContractResolver
-            {
-                NamingStrategy = new SnakeCaseNamingStrategy()
-            },
-            Converters = new JsonConverter[] { new EnumJsonConverter() }
-        });
     }
 
     /// <summary>
@@ -48,12 +28,12 @@ public class OneBotEventParser
     /// </summary>
     /// <param name="eventMessage"></param>
     /// <returns></returns>
-    public LambotEvent Parse(JObject eventMessage)
+    public LambotEvent? Parse(JObject eventMessage)
     {
         var post_type = eventMessage.Value<string>("post_type");
-        return MessageUtils.ConvertTo<PostType>(post_type) switch
+        return MessageUtils.ConvertTo<PostEventType>(post_type) switch
         {
-            PostType.Message => ParseMessageEvent(eventMessage),
+            PostEventType.Message => ParseMessageEvent(eventMessage),
             _ => null
         };
     }
@@ -63,7 +43,7 @@ public class OneBotEventParser
     /// </summary>
     /// <param name="eventObj"></param>
     /// <returns></returns>
-    internal MessageEvent ParseMessageEvent(JObject eventObj)
+    internal BaseMessageEvent? ParseMessageEvent(JObject eventObj)
     {
         var message_type = eventObj.Value<string>("message_type");
         return MessageUtils.ConvertTo<MessageType>(message_type) switch
@@ -79,9 +59,9 @@ public class OneBotEventParser
     /// </summary>
     /// <param name="eventObj"></param>
     /// <returns></returns>
-    internal MessageEvent ParseGroupMessageEvent(JObject eventObj)
+    internal BaseMessageEvent ParseGroupMessageEvent(JObject eventObj)
     {
-        var evt = eventObj.ToObject<GroupMessageEvent>(_deserializer);
+        var evt = eventObj.ToObject<GroupMessageEvent>(_deserializer)!;
 
         _logger.LogInformation("来自群 [{groupId}] 成员 [{userId}] 的{sub_type} [{message_id}]: {raw_message}",
             evt.GroupId, evt.UserId, MessageUtils.GetChinese(evt.SubType), evt.MessageId, evt.RawMessage);
@@ -94,9 +74,9 @@ public class OneBotEventParser
     /// </summary>
     /// <param name="eventObj"></param>
     /// <returns></returns>
-    internal MessageEvent ParsePriverMessageEvent(JObject eventObj)
+    internal BaseMessageEvent ParsePriverMessageEvent(JObject eventObj)
     {
-        var evt = eventObj.ToObject<PrivateMessageEvent>(_deserializer);
+        var evt = eventObj.ToObject<PrivateMessageEvent>(_deserializer)!;
 
         _logger.LogInformation("来自好友 [{userId}] 的{sub_type} [{message_id}]: {raw_message}",
             evt.UserId, MessageUtils.GetChinese(evt.SubType), evt.MessageId, evt.RawMessage);

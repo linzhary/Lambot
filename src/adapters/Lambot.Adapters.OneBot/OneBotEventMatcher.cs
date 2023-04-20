@@ -51,7 +51,7 @@ internal class OneBotEventMatcher : IPluginMatcher
 
     private readonly ConcurrentDictionary<MethodInfo, Delegate> _methodCache = new();
 
-    private async Task<object> DyamicInvokeAsync(PluginMatcherParameter parameter)
+    private async Task<object?> DyamicInvokeAsync(PluginMatcherParameter parameter)
     {
         if (!parameter.IsTypeChecked) return null;
         if (!parameter.IsRuleChecked) return null;
@@ -62,7 +62,7 @@ internal class OneBotEventMatcher : IPluginMatcher
 
         _context.IsBreaked = parameter.TypeMatcher.Break;
 
-        var parameterValues = new List<object>();
+        var parameterValues = new List<object?>();
         var parameterInfos = parameter.MethodInfo.GetParameters();
         foreach (var parameterInfo in parameterInfos)
         {

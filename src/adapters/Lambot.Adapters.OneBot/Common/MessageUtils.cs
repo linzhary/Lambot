@@ -2,7 +2,7 @@
 
 internal static class MessageUtils
 {
-    public static object ConvertValue(object obj, Type type)
+    public static object? ConvertValue(object? obj, Type type) 
     {
         if (obj is null) return default;
         if (obj is not string) return default;
@@ -19,7 +19,7 @@ internal static class MessageUtils
         }
     }
 
-    public static T ConvertTo<T>(object obj) where T : struct, Enum
+    public static T ConvertTo<T>(object? obj) where T : struct, Enum
     {
         if (obj is null) return default;
         if (obj is not string) return default;

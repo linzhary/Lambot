@@ -47,18 +47,17 @@ public class FastLearningRepository
     }
     private static string ResolveImage(string fileName)
     {
-        if (string.IsNullOrWhiteSpace(fileName)) return default;
+        if (string.IsNullOrWhiteSpace(fileName)) return fileName;
         return "file://" + Path.GetFullPath($"./data/images/{fileName}").Replace('\\', '/');
     }
 
     private static string TrimCQImage(string raw_msg, bool download = true)
     {
-        if (string.IsNullOrWhiteSpace(raw_msg)) return default;
+        if (string.IsNullOrWhiteSpace(raw_msg)) return raw_msg;
         var message = Message.Parse(raw_msg);
         message.Segments.ForEach(async seg =>
         {
-            if (seg is not ImageMessageSeg) return;
-            var img_seg = seg as ImageMessageSeg;
+            if (seg is not ImageMessageSeg img_seg) return;
             if (string.IsNullOrWhiteSpace(img_seg.File)) return;
             if (download && img_seg.Url is not null)
             {
@@ -69,14 +68,13 @@ public class FastLearningRepository
         return message.ToString();
     }
 
-    private static string ParseCQImage(string raw_msg)
+    private static string? ParseCQImage(string? raw_msg)
     {
-        if (string.IsNullOrWhiteSpace(raw_msg)) return default;
+        if (string.IsNullOrWhiteSpace(raw_msg)) return raw_msg;
         var message = Message.Parse(raw_msg);
         message.Segments.ForEach(seg =>
         {
-            if (seg is not ImageMessageSeg) return;
-            var img_seg = seg as ImageMessageSeg;
+            if (seg is not ImageMessageSeg img_seg) return;
             img_seg.File = ResolveImage(img_seg.File);
         });
         return message.ToString();
@@ -146,14 +144,14 @@ public class FastLearningRepository
         return question;
     }
 
-    public string MatchText(string question, long group_id, long user_id)
+    public string? MatchText(string question, long group_id, long user_id)
     {
         question = BeforMatch(question);
         var answers = _cache.GetValueOrDefault(question);
         return MatchAnswer(answers, group_id, user_id);
     }
 
-    public string MatchRegex(string question, long group_id, long user_id)
+    public string? MatchRegex(string question, long group_id, long user_id)
     {
         foreach (var item in _cache)
         {
@@ -169,11 +167,11 @@ public class FastLearningRepository
         return default;
     }
 
-    private static string MatchAnswer(IDictionary<long, string> answers, long group_id, long user_id)
+    private static string? MatchAnswer(IDictionary<long, string>? answers, long group_id, long user_id)
     {
         if (answers is null) return default;
         var union_id = UnionId(group_id, user_id);
-        var answer = default(string);
+        string? answer;
         if (!answers.TryGetValue(union_id, out answer))
         {
             union_id = UnionId(group_id, 0);
@@ -210,8 +208,8 @@ public class FastLearningRepository
         .ToListAsync();
         result.ForEach(item =>
         {
-            item.Question = ParseCQImage(item.Question);
-            item.Answer = ParseCQImage(item.Answer);
+            item.Question = ParseCQImage(item.Question)!;
+            item.Answer = ParseCQImage(item.Answer)!;
         });
         return result;
     }

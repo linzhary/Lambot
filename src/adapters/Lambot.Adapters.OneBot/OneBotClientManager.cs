@@ -11,8 +11,8 @@ public class OneBotClientManager
         _clientMap.AddOrUpdate(client.UserId, client, (_, _) => client);
     }
 
-    internal OneBotClient Get(long user_id)
+    internal OneBotClient? Get(long user_id)
     {
-        return _clientMap.GetValueOrDefault(user_id, null);
+        return _clientMap!.GetValueOrDefault(user_id, null);
     }
 }

@@ -4,7 +4,7 @@ using System.Reflection;
 
 namespace Lambot.Core.Plugin;
 
-internal class PluginCollection : IPluginCollection
+internal class LambotPluginCollection : IPluginCollection
 {
     internal static List<TypeMatcher> _typeMatcherList = new();
     internal static readonly ConcurrentDictionary<string, PluginInfo> _pluginInfoMap = new();
@@ -14,7 +14,7 @@ internal class PluginCollection : IPluginCollection
 
     private readonly IServiceProvider _rootRerviceProvier;
 
-    public PluginCollection(IServiceProvider rootServiceProvier)
+    public LambotPluginCollection(IServiceProvider rootServiceProvier)
     {
         _rootRerviceProvier = rootServiceProvier;
     }
@@ -35,17 +35,17 @@ internal class PluginCollection : IPluginCollection
 
         if (methodInfo.IsDefined(typeof(RuleMatcher), true))
         {
-            _ruleMatcherMap.TryAdd(typeMatcher.Id, methodInfo.GetCustomAttribute<RuleMatcher>());
+            _ruleMatcherMap.TryAdd(typeMatcher.Id, methodInfo.GetCustomAttribute<RuleMatcher>()!);
         }
         if (methodInfo.IsDefined(typeof(PermMatcher), true))
         {
-            _permMatcherMap.TryAdd(typeMatcher.Id, methodInfo.GetCustomAttribute<PermMatcher>());
+            _permMatcherMap.TryAdd(typeMatcher.Id, methodInfo.GetCustomAttribute<PermMatcher>()!);
         }
     }
 
-    public async Task OnMessageAsync(long client_id, LambotEvent evt)
+    public Task OnReceiveAsync(long client_id, LambotEvent evt)
     {
-        await Task.Run(async () =>
+        return Task.Run(async () =>
         {
             using var scope = _rootRerviceProvier.CreateAsyncScope();
             var context = scope.ServiceProvider.GetRequiredService<LambotContext>();
@@ -53,21 +53,20 @@ internal class PluginCollection : IPluginCollection
             var pluginMatcher = scope.ServiceProvider.GetRequiredService<IPluginMatcher>();
             foreach (var typeMatcher in _typeMatcherList)
             {
-                var methodInfo = _methodInfoMap.GetValueOrDefault(typeMatcher.Id);
-                if (methodInfo?.DeclaringType is null) continue;
+                var methodInfo = _methodInfoMap[typeMatcher.Id];
+                if (methodInfo.DeclaringType is null) continue;
                 var parameter = new PluginMatcherParameter
                 {
                     Event = evt,
                     MethodInfo = methodInfo,
                     TypeMatcher = typeMatcher,
-                    PluginInfo = _pluginInfoMap.GetValueOrDefault(typeMatcher.Id),
-                    RuleMatcher = _ruleMatcherMap.GetValueOrDefault(typeMatcher.Id),
-                    PermMatcher = _permMatcherMap.GetValueOrDefault(typeMatcher.Id),
-                    Context = context,
+                    PluginInfo = _pluginInfoMap[typeMatcher.Id],
+                    RuleMatcher = _ruleMatcherMap[typeMatcher.Id],
+                    PermMatcher = _permMatcherMap[typeMatcher.Id],
                     PluginInstance = scope.ServiceProvider.GetRequiredService(methodInfo.DeclaringType)
                 };
                 await pluginMatcher.InvokeAsync(parameter);
-                if (parameter.Context.IsBreaked) break;
+                if (context.IsBreaked) break;
             }
         });
     }

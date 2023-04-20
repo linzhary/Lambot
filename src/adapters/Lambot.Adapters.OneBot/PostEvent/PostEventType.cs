@@ -1,6 +1,6 @@
 ﻿namespace Lambot.Adapters.OneBot;
 
-public enum PostType
+public enum PostEventType
 {
     /// <summary>
     /// 未知

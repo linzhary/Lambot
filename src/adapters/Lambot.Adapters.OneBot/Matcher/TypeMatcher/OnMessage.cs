@@ -17,7 +17,7 @@ public class OnMessage : TypeMatcher
 
     public override bool Check(LambotEvent evt)
     {
-        var messageEvent = evt as MessageEvent;
+        var messageEvent = evt as BaseMessageEvent;
         if (messageEvent is null) return false;
         //消息类型过滤
         if (Type is not MessageType.Unknow && messageEvent.MessageType != Type)

@@ -5,7 +5,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-namespace Lambot.Core;
+namespace Lambot.Core.Hosting;
 
 public class LambotApplicationBuilder
 {

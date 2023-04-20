@@ -5,10 +5,9 @@ namespace Lambot.Core.Plugin;
 
 public static class ServiceCollectionExtensions
 {
-    
     public static void RegisterPlugins(this IServiceCollection services)
     {
-        services.AddSingleton<IPluginCollection, PluginCollection>();
+        services.AddSingleton<IPluginCollection, LambotPluginCollection>();
         var entryAssembly = Assembly.GetEntryAssembly();
         if (entryAssembly is null) return;
         var directory = Path.GetDirectoryName(entryAssembly.Location);
@@ -17,7 +16,6 @@ public static class ServiceCollectionExtensions
         {
             var fileName = Path.GetFileName(file);
             if (fileName.StartsWith("System.")) continue;
-            if (fileName.StartsWith("Websocket.")) continue;
             if (fileName.StartsWith("Microsoft.")) continue;
             if (fileName.StartsWith("Newtonsoft.")) continue;
             if (fileName.StartsWith("Lambot.Core.")) continue;
@@ -37,7 +35,7 @@ public static class ServiceCollectionExtensions
                 };
                 foreach (var pluginMethod in plugin.GetMethods())
                 {
-                    PluginCollection.TryAdd(pluginAttr, pluginMethod);
+                    LambotPluginCollection.TryAdd(pluginAttr, pluginMethod);
                 }
                 Console.WriteLine($"Loading Plugin[{pluginAttr.Name} {pluginAttr.Version}]");
             }
