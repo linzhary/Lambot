@@ -6,6 +6,8 @@ namespace Lambot.Core;
 
 public class LambotContext
 {
+    public long ClientId { get; set; } = -1;
+
     public bool IsBreaked { get; set; }
 
     public Exception Skip()

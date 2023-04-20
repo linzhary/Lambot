@@ -17,11 +17,12 @@ public class OneBotClient
     private WebSocket _webSocket;
     private readonly ArraySegment<byte> _socketBuffer = new(new byte[1024 * 4]);
     private readonly List<byte> _messageBuffer = new();
+    private readonly ConcurrentQueue<string> _messageQueue = new();
     private readonly ConcurrentDictionary<string, Action<JObject>> _callbackMap = new();
-
     private readonly OneBotEventParser _eventParser;
     private readonly IPluginCollection _pluginCollection;
     private readonly ILogger<OneBotClient> _logger;
+    private readonly OneBotClientManager _clientManager;
 
     private static readonly JsonSerializerSettings _serializerSettings = new()
     {
@@ -31,11 +32,13 @@ public class OneBotClient
     public OneBotClient(
         OneBotEventParser eventParser,
         IPluginCollection pluginCollection,
-        ILogger<OneBotClient> logger)
+        ILogger<OneBotClient> logger,
+        OneBotClientManager clientManager)
     {
         _eventParser = eventParser;
         _pluginCollection = pluginCollection;
         _logger = logger;
+        _clientManager = clientManager;
     }
 
     /// <summary>
@@ -58,6 +61,7 @@ public class OneBotClient
             Nickname = messageObj["data"].Value<string>("nickname");
             _receivable = true;
             _logger.LogInformation("init client [{user_id}] [{nickname}] success", UserId, Nickname);
+            _clientManager.Add(this);
         });
     }
 
@@ -161,7 +165,7 @@ public class OneBotClient
     /// 启动一个消息接收任务
     /// </summary>
     /// <returns></returns>
-    public Task BeginReceiveTaskAsync()
+    public Task BeginMessageReceiveTask()
     {
         return Task.Run(async () =>
         {
@@ -184,25 +188,41 @@ public class OneBotClient
                     if (result.EndOfMessage)
                     {
                         var message = Encoding.UTF8.GetString(_messageBuffer.ToArray());
-                        try
-                        {
-                            var messageObj = JObject.Parse(message);
-                            if (!this.TryInvokeCallback(messageObj) && _receivable)
-                            {
-                                var @event = _eventParser.Parse(messageObj);
-                                if (@event is null) continue;
-                                await _pluginCollection.OnMessageAsync(@event);
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.LogError(ex, "Process Message Failure: {message}", message);
-                        }
-
+                        this._messageQueue.Enqueue(message);
                         _messageBuffer.Clear();
                     }
                 }
             } while (result is not null && !result.CloseStatus.HasValue);
+        });
+    }
+    /// <summary>
+    /// 启动一个消息处理任务
+    /// </summary>
+    /// <returns></returns>
+    public Task BeginMessageProcessTask()
+    {
+        return Task.Run(async () =>
+        {
+            while (true)
+            {
+                if (_messageQueue.TryDequeue(out var message))
+                {
+                    try
+                    {
+                        var messageObj = JObject.Parse(message);
+                        if (!this.TryInvokeCallback(messageObj) && _receivable)
+                        {
+                            var @event = _eventParser.Parse(messageObj);
+                            if (@event is null) continue;
+                            await _pluginCollection.OnMessageAsync(UserId, @event);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Process Message Failure: {message}", message);
+                    }
+                }
+            }
         });
     }
 }

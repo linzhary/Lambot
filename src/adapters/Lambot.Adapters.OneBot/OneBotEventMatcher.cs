@@ -9,7 +9,7 @@ using System.Text.RegularExpressions;
 
 namespace Lambot.Adapters.OneBot;
 
-internal class OneBotEventMatcher
+internal class OneBotEventMatcher : IPluginMatcher
 {
     private readonly ILogger<OneBotEventMatcher> _logger;
     private readonly LambotContext _context;
@@ -50,13 +50,13 @@ internal class OneBotEventMatcher
     }
 
     private readonly ConcurrentDictionary<MethodInfo, Delegate> _methodCache = new();
-    
+
     private async Task<object> DyamicInvokeAsync(PluginMatcherParameter parameter)
     {
         if (!parameter.IsTypeChecked) return null;
         if (!parameter.IsRuleChecked) return null;
         if (!parameter.IsPermChecked) return null;
-        
+
         _logger.LogInformation("消息 [{message_id}] 匹配到 [{plugin__name}] 的 [{method_name}]"
             , parameter.Event.MessageId, parameter.PluginInfo.Name, parameter.MethodInfo.Name);
 

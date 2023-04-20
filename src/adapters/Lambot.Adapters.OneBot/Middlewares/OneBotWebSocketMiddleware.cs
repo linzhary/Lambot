@@ -29,13 +29,14 @@ public class OneBotWebSocketMiddleware : IMiddleware
 
                 //初始化session的webSocket
                 _client.InitWebSocket(webSocket);
-
                 //启动消息接收任务
-                var receiveTask = _client.BeginReceiveTaskAsync();
+                var receiveTask = _client.BeginMessageReceiveTask();
+                //启动消息处理任务
+                var processTask = _client.BeginMessageProcessTask();
                 //初始化账户信息
                 await _client.InitUserInfoAsync();
 
-                await receiveTask;
+                await Task.WhenAll(receiveTask, processTask);
 
                 _logger.LogInformation("break ws connetion with {ipAddress}:{port}", context.Connection.RemoteIpAddress, context.Connection.RemotePort);
             }

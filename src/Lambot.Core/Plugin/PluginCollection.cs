@@ -43,11 +43,13 @@ internal class PluginCollection : IPluginCollection
         }
     }
 
-    public async Task OnMessageAsync(LambotEvent evt)
+    public async Task OnMessageAsync(long client_id, LambotEvent evt)
     {
         await Task.Run(async () =>
         {
             using var scope = _rootRerviceProvier.CreateAsyncScope();
+            var context = scope.ServiceProvider.GetRequiredService<LambotContext>();
+            context.ClientId = client_id;
             var pluginMatcher = scope.ServiceProvider.GetRequiredService<IPluginMatcher>();
             foreach (var typeMatcher in _typeMatcherList)
             {
@@ -61,7 +63,7 @@ internal class PluginCollection : IPluginCollection
                     PluginInfo = _pluginInfoMap.GetValueOrDefault(typeMatcher.Id),
                     RuleMatcher = _ruleMatcherMap.GetValueOrDefault(typeMatcher.Id),
                     PermMatcher = _permMatcherMap.GetValueOrDefault(typeMatcher.Id),
-                    Context = scope.ServiceProvider.GetRequiredService<LambotContext>(),
+                    Context = context,
                     PluginInstance = scope.ServiceProvider.GetRequiredService(methodInfo.DeclaringType)
                 };
                 await pluginMatcher.InvokeAsync(parameter);

@@ -26,6 +26,8 @@ public class LambotApplication
             opts.KeepAliveInterval = TimeSpan.FromMilliseconds(3000);
         });
 
+        builder.Services.AddScoped<LambotContext>();
+
         return new LambotApplicationBuilder(builder);
     }
 }
