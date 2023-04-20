@@ -17,7 +17,7 @@ public class OneBotClient
     private WebSocket _webSocket;
     private readonly ArraySegment<byte> _socketBuffer = new(new byte[1024 * 4]);
     private readonly List<byte> _messageBuffer = new();
-    private readonly ConcurrentDictionary<string, Action<JObject>> _callbackMap = new(); 
+    private readonly ConcurrentDictionary<string, Action<JObject>> _callbackMap = new();
 
     private readonly OneBotEventParser _eventParser;
     private readonly IPluginCollection _pluginCollection;
@@ -29,8 +29,8 @@ public class OneBotClient
     };
 
     public OneBotClient(
-        OneBotEventParser eventParser, 
-        IPluginCollection pluginCollection, 
+        OneBotEventParser eventParser,
+        IPluginCollection pluginCollection,
         ILogger<OneBotClient> logger)
     {
         _eventParser = eventParser;
@@ -46,17 +46,17 @@ public class OneBotClient
     {
         _webSocket = webSocket;
     }
-    
+
     /// <summary>
     /// 初始化Client的UserInfo
     /// </summary>
     internal async Task InitUserInfoAsync()
-    { 
+    {
         await SendAsync("get_login_info", null, messageObj =>
         {
             UserId = messageObj["data"].Value<long>("user_id");
-            Nickname = messageObj["data"].Value<string>("Nickname");
-            _receivable = true;
+            Nickname = messageObj["data"].Value<string>("nickname");
+            // _receivable = true;
             _logger.LogInformation("init client [{user_id}] [{nickname}] success", UserId, Nickname);
         });
     }
@@ -161,9 +161,9 @@ public class OneBotClient
     /// 启动一个消息接收任务
     /// </summary>
     /// <returns></returns>
-    public Task<Task> BeginReceiveTaskAsync()
+    public Task BeginReceiveTaskAsync()
     {
-        return Task.Factory.StartNew(async () =>
+        return Task.Run(async () =>
         {
             WebSocketReceiveResult result;
             do
@@ -190,7 +190,7 @@ public class OneBotClient
                             if (!this.TryInvokeCallback(messageObj) && _receivable)
                             {
                                 var @event = _eventParser.Parse(messageObj);
-                                if (@event is null) return;
+                                if (@event is null) continue;
                                 await _pluginCollection.OnMessageAsync(@event);
                             }
                         }

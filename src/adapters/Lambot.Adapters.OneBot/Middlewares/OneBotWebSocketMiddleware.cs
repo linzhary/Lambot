@@ -24,18 +24,19 @@ public class OneBotWebSocketMiddleware : IMiddleware
             if (context.WebSockets.IsWebSocketRequest)
             {
                 _logger.LogInformation("begin ws connetion with {ipAddress}:{port}", context.Connection.RemoteIpAddress, context.Connection.RemotePort);
-                
+
                 var webSocket = await context.WebSockets.AcceptWebSocketAsync();
-                
+
                 //初始化session的webSocket
                 _client.InitWebSocket(webSocket);
+
                 //启动消息接收任务
-                var receiveTask = await _client.BeginReceiveTaskAsync();
+                var receiveTask = _client.BeginReceiveTaskAsync();
                 //初始化账户信息
                 await _client.InitUserInfoAsync();
-                
+
                 await receiveTask;
-                
+
                 _logger.LogInformation("break ws connetion with {ipAddress}:{port}", context.Connection.RemoteIpAddress, context.Connection.RemotePort);
             }
             else

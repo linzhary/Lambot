@@ -23,16 +23,16 @@ internal class PluginCollection : IPluginCollection
     {
         var typeMatcher = methodInfo.GetCustomAttribute<TypeMatcher>();
         if (typeMatcher is null) return;
-        
+
         _typeMatcherList.Add(typeMatcher);
         _typeMatcherList = _typeMatcherList
             .OrderBy(x => x.Priority)
             .ThenBy(x => x.Id)
             .ToList();
-        
+
         _pluginInfoMap.TryAdd(typeMatcher.Id, pluginInfo);
         _methodInfoMap.TryAdd(typeMatcher.Id, methodInfo);
-        
+
         if (methodInfo.IsDefined(typeof(RuleMatcher), true))
         {
             _ruleMatcherMap.TryAdd(typeMatcher.Id, methodInfo.GetCustomAttribute<RuleMatcher>());
@@ -45,7 +45,7 @@ internal class PluginCollection : IPluginCollection
 
     public async Task OnMessageAsync(LambotEvent evt)
     {
-        await Task.Factory.StartNew(async () =>
+        await Task.Run(async () =>
         {
             using var scope = _rootRerviceProvier.CreateAsyncScope();
             var pluginMatcher = scope.ServiceProvider.GetRequiredService<IPluginMatcher>();
