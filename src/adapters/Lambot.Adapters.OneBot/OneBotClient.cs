@@ -56,7 +56,7 @@ public class OneBotClient
         {
             UserId = messageObj["data"].Value<long>("user_id");
             Nickname = messageObj["data"].Value<string>("nickname");
-            // _receivable = true;
+            _receivable = true;
             _logger.LogInformation("init client [{user_id}] [{nickname}] success", UserId, Nickname);
         });
     }
