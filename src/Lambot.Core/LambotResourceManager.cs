@@ -1,5 +1,6 @@
 ﻿using System.Collections.Concurrent;
 using System.Net.WebSockets;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 
 namespace Lambot.Core;
@@ -10,6 +11,7 @@ public class LambotWebSocketManager
     private const int MAXSESSIONID = 1010;
     private readonly ConcurrentDictionary<long, bool> _sessionIdMap = new();
     private readonly ConcurrentDictionary<long, WebSocket> _webSocketMap = new();
+    private readonly ConcurrentDictionary<long, HttpContext> _httpContextMap = new();
     private readonly ConcurrentDictionary<long, ConcurrentQueue<string>> _receivedQueueMap = new();
     private readonly ConcurrentDictionary<long, Task> _processorTaskMap = new();
     private readonly ConcurrentDictionary<long, CancellationTokenSource> _cancellationTokenSourceMap = new();
@@ -24,7 +26,7 @@ public class LambotWebSocketManager
             _sessionIdMap.TryAdd(i, false);
         }
     }
-    
+
     /// <summary>
     /// 尝试分配一个Session
     /// </summary>
@@ -53,12 +55,13 @@ public class LambotWebSocketManager
     /// <param name="webSocket"></param>
     /// <param name="sessionId"></param>
     /// <returns></returns>
-    internal void Register(long sessionId, WebSocket webSocket)
+    internal void Register(long sessionId, WebSocket webSocket, HttpContext context)
     {
         _logger.LogInformation("register resource of {id} from [LambotWebSocketManager]", sessionId);
         if (sessionId < MINSESSIONID || sessionId > MAXSESSIONID) throw new ArgumentOutOfRangeException(nameof(sessionId));
         _receivedQueueMap.GetOrAdd(sessionId, _ => new());
         _webSocketMap.GetOrAdd(sessionId, _ => webSocket);
+        _httpContextMap.GetOrAdd(sessionId, _ => context);
     }
 
     /// <summary>
@@ -71,6 +74,7 @@ public class LambotWebSocketManager
         if (sessionId < MINSESSIONID || sessionId > MAXSESSIONID) throw new ArgumentOutOfRangeException(nameof(sessionId));
         _receivedQueueMap.TryRemove(sessionId, out _);
         _webSocketMap.TryRemove(sessionId, out _);
+        _httpContextMap.TryRemove(sessionId, out _);
         if (_cancellationTokenSourceMap.TryRemove(sessionId, out var cancellationTokenSource))
         {
             cancellationTokenSource.Cancel();
@@ -102,12 +106,7 @@ public class LambotWebSocketManager
     internal WebSocket Get(long sessionId)
     {
         if (sessionId < MINSESSIONID || sessionId > MAXSESSIONID) throw new ArgumentOutOfRangeException(nameof(sessionId));
-        if (_webSocketMap.TryGetValue(sessionId, out var webSocket))
-        {
-            return webSocket;
-        }
-
-        return null;
+        return _webSocketMap.TryGetValue(sessionId, out var value) ? value : null;
     }
 
     /// <summary>
@@ -116,6 +115,11 @@ public class LambotWebSocketManager
     /// <returns></returns>
     internal ICollection<long> SessionIds() => _webSocketMap.Keys;
 
+    internal HttpContext Context(long sessionId)
+    {
+        if (sessionId < MINSESSIONID || sessionId > MAXSESSIONID) throw new ArgumentOutOfRangeException(nameof(sessionId));
+        return _httpContextMap.TryGetValue(sessionId, out var value) ? value : null;
+    }
     /// <summary>
     /// 启动一个任务
     /// </summary>

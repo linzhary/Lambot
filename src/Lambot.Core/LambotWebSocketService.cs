@@ -1,6 +1,7 @@
 ﻿using System.Collections.Concurrent;
 using System.Net.WebSockets;
 using System.Text;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 
 namespace Lambot.Core;
@@ -19,10 +20,10 @@ public class LambotWebSocketService : IDisposable
         _logger = logger;
     }
 
-    public async Task<bool> HandleAsync(long sessionId, WebSocket webSocket)
+    public async Task<bool> HandleAsync(long sessionId, WebSocket webSocket, HttpContext context)
     {
         _id = sessionId;
-        _webSocketManager.Register(sessionId, webSocket);
+        _webSocketManager.Register(sessionId, webSocket, context);
         WebSocketReceiveResult result;
         do
         {

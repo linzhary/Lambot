@@ -18,6 +18,8 @@ public class LambotApplication
         //register controllers
         builder.Services.AddControllers().AddNewtonsoftJson();
 
+        builder.Services.AddHttpClient();
+
         //add websocket support
         builder.Services.AddWebSockets(opts =>
         {
