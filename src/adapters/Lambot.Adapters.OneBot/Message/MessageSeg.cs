@@ -45,6 +45,7 @@ public abstract class MessageSeg
         {
             MessageSegType.At => new AtMessageSeg(props),
             MessageSegType.Image => new ImageMessageSeg(props),
+            MessageSegType.Reply => new ReplyMessageSeg(props),
             _ => throw new NotImplementedException(),
         };
     }

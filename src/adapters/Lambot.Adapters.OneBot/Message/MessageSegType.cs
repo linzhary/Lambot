@@ -9,5 +9,8 @@ public enum MessageSegType
     At,
 
     //图片
-    Image
+    Image,
+
+    //回复
+    Reply
 }

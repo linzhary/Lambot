@@ -60,7 +60,7 @@ internal class OneBotEventMatcher : IPluginMatcher
         _logger.LogInformation("消息 [{message_id}] 匹配到 [{plugin__name}] 的 [{method_name}]"
             , parameter.Event.MessageId, parameter.PluginInfo.Name, parameter.MethodInfo.Name);
 
-        _context.IsBreaked = parameter.TypeMatcher.Break;
+        _context.IsBreaked = parameter.TypeMatcher!.Break;
 
         var parameterValues = new List<object?>();
         var parameterInfos = parameter.MethodInfo.GetParameters();
