@@ -16,7 +16,7 @@ public class LambotApplicationBuilder
     public IWebHostEnvironment Environment => _builder.Environment;
     public ConfigureHostBuilder Host => _builder.Host;
     public ConfigureWebHostBuilder WebHost => _builder.WebHost;
-    
+
     internal LambotApplicationBuilder(WebApplicationBuilder builder)
     {
         _builder = builder;
@@ -25,7 +25,11 @@ public class LambotApplicationBuilder
     public WebApplication Build()
     {
         var app = _builder.Build();
+
         app.UseRouting();
+        app.UseDefaultFiles();
+        app.UseStaticFiles();
+
         app.UseWebSockets();
         foreach (var adapter in AdapterCollection.Adapters.Values)
         {
