@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Lambot.Adapters.OneBot;
 
-internal class GlobalConfig
+internal static class GlobalConfig
 {
     internal static readonly JsonSerializer JsonDeserializer = JsonSerializer.Create(new JsonSerializerSettings
     {
