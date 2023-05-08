@@ -4,9 +4,9 @@ namespace Lambot.Core.Plugin;
 
 public class PluginMatcherParameter
 {
-    public TypeMatcher TypeMatcher { get; internal set; } = null!;
-    public RuleMatcher RuleMatcher { get; internal set; } = null!;
-    public PermMatcher PermMatcher {  get; internal set; } = null!;
+    public TypeMatcher? TypeMatcher { get; internal set; } = null;
+    public RuleMatcher? RuleMatcher { get; internal set; } = null;
+    public PermMatcher? PermMatcher { get; internal set; } = null;
     public MethodInfo MethodInfo { get; internal set; } = null!;
     public PluginInfo PluginInfo { get; internal set; } = null!;
     public LambotEvent Event { get; internal set; } = null!;
@@ -20,7 +20,7 @@ public class PluginMatcherParameter
             return TypeMatcher.Check(Event);
         }
     }
-    
+
     public bool IsRuleChecked
     {
         get

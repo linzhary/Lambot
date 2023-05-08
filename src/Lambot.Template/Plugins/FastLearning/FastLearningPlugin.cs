@@ -114,7 +114,7 @@ public class FastLearningPlugin : PluginBase
     }
 
     [OnRegex(@$"看看({ME}|{ANY})(问|说)")]
-    [OnMessage(Type = MessageType.Group, Break = true)]
+    [OnMessage(Type = MessageType.Group, Priority = 0, Break = true)]
     public async Task<string?> ListQuestionAsync(GroupMessageEvent evt, Group[] matchGroups)
     {
         if (!CheckGroupPermission(evt.GroupId)) return null;

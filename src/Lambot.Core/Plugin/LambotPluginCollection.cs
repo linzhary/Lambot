@@ -61,8 +61,8 @@ internal class LambotPluginCollection : IPluginCollection
                     MethodInfo = methodInfo,
                     TypeMatcher = typeMatcher,
                     PluginInfo = _pluginInfoMap[typeMatcher.Id],
-                    RuleMatcher = _ruleMatcherMap[typeMatcher.Id],
-                    PermMatcher = _permMatcherMap[typeMatcher.Id],
+                    RuleMatcher = _ruleMatcherMap.GetValueOrDefault(typeMatcher.Id),
+                    PermMatcher = _permMatcherMap.GetValueOrDefault(typeMatcher.Id),
                     PluginInstance = scope.ServiceProvider.GetRequiredService(methodInfo.DeclaringType)
                 };
                 await pluginMatcher.InvokeAsync(parameter);
