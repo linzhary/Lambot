@@ -51,10 +51,8 @@ public class FastLearningRepository
         return "file://" + Path.GetFullPath($"./data/images/{fileName}").Replace('\\', '/');
     }
 
-    private static string TrimCQImage(string raw_msg, bool download = true)
+    private static string TrimCQImage(Message message, bool download = true)
     {
-        if (string.IsNullOrWhiteSpace(raw_msg)) return raw_msg;
-        var message = Message.Parse(raw_msg);
         message.Segments.ForEach(async seg =>
         {
             if (seg is not ImageMessageSeg img_seg) return;
@@ -65,19 +63,17 @@ public class FastLearningRepository
             }
             img_seg.Url = null;
         });
-        return message.ToString();
+        return (string)message;
     }
 
-    private static string? ParseCQImage(string? raw_msg)
+    private static string ParseCQImage(Message message)
     {
-        if (string.IsNullOrWhiteSpace(raw_msg)) return raw_msg;
-        var message = Message.Parse(raw_msg);
         message.Segments.ForEach(seg =>
         {
             if (seg is not ImageMessageSeg img_seg) return;
             img_seg.File = ResolveImage(img_seg.File);
         });
-        return message.ToString();
+        return (string)message;
     }
 
     private readonly ConcurrentDictionary<string, ConcurrentDictionary<long, string>> _cache = new();
@@ -97,10 +93,10 @@ public class FastLearningRepository
     private static (string, string) BeforAdd(string question, string answer)
     {
         question = TrimMessage(question);
-        question = TrimCQImage(question);
+        question = TrimCQImage((Message)question);
 
         answer = TrimMessage(answer);
-        answer = TrimCQImage(answer);
+        answer = TrimCQImage((Message)answer);
         return (question, answer);
     }
 
@@ -140,7 +136,7 @@ public class FastLearningRepository
     private static string BeforMatch(string question)
     {
         question = TrimMessage(question);
-        question = TrimCQImage(question, false);
+        question = TrimCQImage((Message)question, false);
         return question;
     }
 
@@ -177,7 +173,7 @@ public class FastLearningRepository
             union_id = UnionId(group_id, 0);
             answers.TryGetValue(union_id, out answer);
         }
-        return ParseCQImage(answer);
+        return answer is null ? answer : ParseCQImage((Message)answer);
     }
 
     public async Task<string> DelAsync(string question, long group_id, long user_id)
@@ -197,7 +193,7 @@ public class FastLearningRepository
         .Where(x => x.GroupId == group_id)
         .Where(x => x.UserId == user_id)
         .ExecuteDeleteAsync();
-        return $"我不再回答{ParseCQImage(answer)}了~";
+        return $"我不再回答{ParseCQImage((Message)answer)}了~";
     }
 
     public async Task<List<FastLearningRecord>> ListAsync(long group_id, long user_id)
@@ -208,8 +204,8 @@ public class FastLearningRepository
         .ToListAsync();
         result.ForEach(item =>
         {
-            item.Question = ParseCQImage(item.Question)!;
-            item.Answer = ParseCQImage(item.Answer)!;
+            item.Question = ParseCQImage((Message)item.Question)!;
+            item.Answer = ParseCQImage((Message)item.Answer)!;
         });
         return result;
     }

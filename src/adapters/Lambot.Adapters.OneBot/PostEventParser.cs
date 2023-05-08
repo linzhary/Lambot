@@ -9,14 +9,7 @@ namespace Lambot.Adapters.OneBot;
 public class PostEventParser
 {
     private readonly ILogger<PostEventParser> _logger;
-    private readonly JsonSerializer _deserializer = JsonSerializer.Create(new JsonSerializerSettings
-    {
-        ContractResolver = new CamelCasePropertyNamesContractResolver
-        {
-            NamingStrategy = new SnakeCaseNamingStrategy()
-        },
-        Converters = new JsonConverter[] { new StringToEnumJsonConverter() }
-    });
+    
 
     public PostEventParser(ILogger<PostEventParser> logger)
     {
@@ -61,7 +54,7 @@ public class PostEventParser
     /// <returns></returns>
     internal BaseMessageEvent ParseGroupMessageEvent(JObject eventObj)
     {
-        var evt = eventObj.ToObject<GroupMessageEvent>(_deserializer)!;
+        var evt = (GroupMessageEvent)eventObj;
 
         _logger.LogInformation("来自群 [{groupId}] 成员 [{userId}] 的{sub_type} [{message_id}]: {raw_message}",
             evt.GroupId, evt.UserId, MessageUtils.GetChinese(evt.SubType), evt.MessageId, evt.RawMessage);
@@ -76,7 +69,7 @@ public class PostEventParser
     /// <returns></returns>
     internal BaseMessageEvent ParsePriverMessageEvent(JObject eventObj)
     {
-        var evt = eventObj.ToObject<PrivateMessageEvent>(_deserializer)!;
+        var evt = (PrivateMessageEvent)eventObj;
 
         _logger.LogInformation("来自好友 [{userId}] 的{sub_type} [{message_id}]: {raw_message}",
             evt.UserId, MessageUtils.GetChinese(evt.SubType), evt.MessageId, evt.RawMessage);

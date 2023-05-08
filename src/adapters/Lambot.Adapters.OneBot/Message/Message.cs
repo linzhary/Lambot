@@ -1,12 +1,19 @@
-﻿namespace Lambot.Adapters.OneBot;
+﻿using Newtonsoft.Json.Linq;
+
+namespace Lambot.Adapters.OneBot;
 
 public class Message
 {
     public List<MessageSeg> Segments { get; private set; } = new List<MessageSeg>();
+    public bool IsEmpty => Segments.Count == 0;
 
-    public static Message Parse(string raw_message)
+    public static explicit operator Message(string raw_message)
     {
         var message = new Message();
+        if (string.IsNullOrWhiteSpace(raw_message))
+        {
+            return message;
+        }
 
         var parser = new StringParser(raw_message);
         while (!parser.IsEnd)
@@ -25,6 +32,11 @@ public class Message
             }
         }
         return message;
+    }
+
+    public static explicit operator string(Message message)
+    {
+        return message.ToString();
     }
 
     public override string ToString()

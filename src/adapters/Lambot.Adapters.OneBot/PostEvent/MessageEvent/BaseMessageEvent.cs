@@ -1,5 +1,6 @@
 ﻿using Lambot.Core;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Lambot.Adapters.OneBot;
 
@@ -56,7 +57,12 @@ public abstract class BaseMessageEvent : LambotEvent
 
     internal BaseMessageEvent Convert()
     {
-        Message = Message.Parse(RawMessage);
+        Message = (Message)RawMessage;
         return this;
+    }
+
+    public static explicit operator BaseMessageEvent(JObject eventObj)
+    {
+        return eventObj.ToObject<BaseMessageEvent>(GlobalConfig.JsonDeserializer) ?? throw new NotSupportedException();
     }
 }
