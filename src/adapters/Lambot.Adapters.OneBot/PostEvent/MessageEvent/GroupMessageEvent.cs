@@ -1,4 +1,7 @@
-﻿namespace Lambot.Adapters.OneBot;
+﻿using Newtonsoft.Json.Linq;
+using System.Diagnostics.CodeAnalysis;
+
+namespace Lambot.Adapters.OneBot;
 
 public class GroupMessageEventSender : BaseMessageEventSender
 {
@@ -41,4 +44,9 @@ public class GroupMessageEvent : BaseMessageEvent
     /// 消息发送人
     /// </summary>
     public GroupMessageEventSender Sender { get; set; } = null!;
+
+    public static explicit operator GroupMessageEvent(JObject eventObj)
+    {
+        return eventObj.ToObject<GroupMessageEvent>(GlobalConfig.JsonDeserializer) ?? throw new NotSupportedException();
+    }
 }

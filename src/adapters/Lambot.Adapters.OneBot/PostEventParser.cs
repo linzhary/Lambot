@@ -88,7 +88,7 @@ public class PostEventParser
     /// <returns></returns>
     internal BaseMessageEvent ParsePriverMessageEvent(JObject eventObj)
     {
-        var evt = eventObj.ToObject<PrivateMessageEvent>(_deserializer)!;
+        var evt = (PrivateMessageEvent)eventObj;
 
         _logger.LogInformation("来自好友 [{userId}] 的{sub_type} [{message_id}]: {raw_message}",
             evt.UserId, MessageUtils.GetChinese(evt.SubType), evt.MessageId, evt.RawMessage);

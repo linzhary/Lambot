@@ -1,4 +1,6 @@
-﻿namespace Lambot.Adapters.OneBot;
+﻿using Newtonsoft.Json.Linq;
+
+namespace Lambot.Adapters.OneBot;
 
 public class PrivateMessageEventSender : BaseMessageEventSender
 {
@@ -20,4 +22,9 @@ public class PrivateMessageEvent : BaseMessageEvent
     /// 消息发送人
     /// </summary>
     public PrivateMessageEventSender Sender { get; set; } = null!;
+
+    public static explicit operator PrivateMessageEvent(JObject eventObj)
+    {
+        return eventObj.ToObject<PrivateMessageEvent>(GlobalConfig.JsonDeserializer) ?? throw new NotSupportedException();
+    }
 }
