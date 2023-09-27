@@ -1,4 +1,5 @@
 ﻿using Lambot.Core;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -9,6 +10,9 @@ namespace Lambot.Adapters.OneBot;
 public class PostEventParser
 {
     private readonly ILogger<PostEventParser> _logger;
+    private readonly IConfiguration _configuration;
+    private readonly List<long> _superUsers = new List<long>();
+
     private readonly JsonSerializer _deserializer = JsonSerializer.Create(new JsonSerializerSettings
     {
         ContractResolver = new CamelCasePropertyNamesContractResolver
@@ -18,9 +22,14 @@ public class PostEventParser
         Converters = new JsonConverter[] { new StringToEnumJsonConverter() }
     });
 
-    public PostEventParser(ILogger<PostEventParser> logger)
+    public PostEventParser(ILogger<PostEventParser> logger, IConfiguration configuration)
     {
         _logger = logger;
+        configuration.GetSection("SuperUsers")?.GetChildren()?.ForEach(item =>
+        {
+            _superUsers.Add(Convert.ToInt64(item.Value));
+        });
+        _configuration = configuration;
     }
 
     /// <summary>
@@ -62,7 +71,10 @@ public class PostEventParser
     internal BaseMessageEvent ParseGroupMessageEvent(JObject eventObj)
     {
         var evt = eventObj.ToObject<GroupMessageEvent>(_deserializer)!;
-
+        if (_superUsers.Contains(evt.Sender.UserId))
+        {
+            evt.Sender.Role = GroupUserRole.SuperAdmin;
+        }
         _logger.LogInformation("来自群 [{groupId}] 成员 [{userId}] 的{sub_type} [{message_id}]: {raw_message}",
             evt.GroupId, evt.UserId, MessageUtils.GetChinese(evt.SubType), evt.MessageId, evt.RawMessage);
 

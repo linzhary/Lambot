@@ -28,10 +28,11 @@ public class FastLearningRepository
 
     private static async Task DownloadImageAsync(string fileName, string url)
     {
+
         if (string.IsNullOrWhiteSpace(fileName)) return;
         if (string.IsNullOrWhiteSpace(url)) return;
 
-        var file = ResolveImage(fileName);
+        var file = $"./data/images/{fileName}";
         if (!File.Exists(file))
         {
             try
@@ -39,10 +40,11 @@ public class FastLearningRepository
                 using var client = new HttpClient();
                 File.WriteAllBytes(file, await client.GetByteArrayAsync(url));
             }
-            catch
+            catch(Exception ex)
             {
-
+                Console.WriteLine(ex.Message);
             }
+
         }
     }
     private static string ResolveImage(string fileName)
@@ -65,6 +67,7 @@ public class FastLearningRepository
             }
             img_seg.Url = null;
         });
+
         return message.ToString();
     }
 
@@ -77,6 +80,7 @@ public class FastLearningRepository
             if (seg is not ImageMessageSeg img_seg) return;
             img_seg.File = ResolveImage(img_seg.File);
         });
+
         return message.ToString();
     }
 
@@ -97,7 +101,7 @@ public class FastLearningRepository
     private static (string, string) BeforAdd(string question, string answer)
     {
         question = TrimMessage(question);
-        question = TrimCQImage(question);
+        // question = TrimCQImage(question);
 
         answer = TrimMessage(answer);
         answer = TrimCQImage(answer);
@@ -109,7 +113,7 @@ public class FastLearningRepository
         if (!CheckQuestion(question)) return "暂不支持的添加方式~";
         (question, answer) = BeforAdd(question, answer);
         var unionId = UnionId(group_id, user_id);
-
+    
         var answers = _cache.GetOrAdd(question, k => new());
         answers.AddOrUpdate(unionId, answer, (k, v) => answer);
         var entity = await _dbContext.Records

@@ -25,4 +25,9 @@ public enum GroupUserRole
     /// 群主
     /// </summary>
     Owner = 0x100,
+
+    /// <summary>
+    /// 超级管理员
+    /// </summary>
+    SuperAdmin = 0x1000
 }
