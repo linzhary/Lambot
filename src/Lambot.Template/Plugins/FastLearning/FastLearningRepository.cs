@@ -78,18 +78,22 @@ public class FastLearningRepository
         return (string)message;
     }
 
-    private readonly ConcurrentDictionary<string, ConcurrentDictionary<long, string>> _cache = new();
+    private static bool _cache_inital = false;
+    private static readonly ConcurrentDictionary<string, ConcurrentDictionary<long, string>> _cache = new();
 
     private readonly FastLearningDbContext _dbContext;
 
     public FastLearningRepository(FastLearningDbContext dbContext)
     {
         _dbContext = dbContext;
-        var records = dbContext.Records.ToList();
-        records.ForEach(async item =>
-        {
-            await AddAsync(item.Question, item.Answer, item.GroupId, item.UserId);
-        });
+        if(!_cache_inital){
+            _cache_inital = true;
+            var records = dbContext.Records.ToList();
+            records.ForEach(async item =>
+            {
+                await AddAsync(item.Question, item.Answer, item.GroupId, item.UserId, true);
+            });
+        }
     }
 
     private static (string, string) BeforAdd(string question, string answer)
@@ -102,7 +106,7 @@ public class FastLearningRepository
         return (question, answer);
     }
 
-    public async Task<string> AddAsync(string question, string answer, long group_id, long user_id)
+    public async Task<string> AddAsync(string question, string answer, long group_id, long user_id, bool inital = false)
     {
         if (!CheckQuestion(question)) return "暂不支持的添加方式~";
         (question, answer) = BeforAdd(question, answer);
@@ -110,28 +114,30 @@ public class FastLearningRepository
     
         var answers = _cache.GetOrAdd(question, k => new());
         answers.AddOrUpdate(unionId, answer, (k, v) => answer);
-        var entity = await _dbContext.Records
-            .Where(x => x.Question == question)
-            .Where(x => x.GroupId == group_id)
-            .Where(x => x.UserId == user_id)
-            .FirstOrDefaultAsync();
-        if (entity == default)
-        {
-            entity = new FastLearningRecord
+        if(!inital){
+            var entity = await _dbContext.Records
+                .Where(x => x.Question == question)
+                .Where(x => x.GroupId == group_id)
+                .Where(x => x.UserId == user_id)
+                .FirstOrDefaultAsync();
+            if (entity == default)
             {
-                Question = question,
-                Answer = answer,
-                GroupId = group_id,
-                UserId = user_id,
-                Time = DateTimeOffset.UtcNow,
-            };
-            await _dbContext.AddAsync(entity);
+                entity = new FastLearningRecord
+                {
+                    Question = question,
+                    Answer = answer,
+                    GroupId = group_id,
+                    UserId = user_id,
+                    Time = DateTimeOffset.UtcNow,
+                };
+                await _dbContext.AddAsync(entity);
+            }
+            else
+            {
+                entity.Answer = answer;
+            }
+            await _dbContext.SaveChangesAsync();
         }
-        else
-        {
-            entity.Answer = answer;
-        }
-        await _dbContext.SaveChangesAsync();
         return "我已经记住了~";
     }
 

@@ -117,6 +117,22 @@ public class OneBotClient
     }
 
     /// <summary>
+    /// 群消息
+    /// </summary>
+    /// <param name="group_id"></param>
+    /// <param name="message"></param>
+    /// <returns></returns>
+    public async Task SendGroupMessageAsync(long group_id, string message)
+    {
+        await SendAsync("send_group_msg", new
+        {
+            group_id,
+            message,
+            auto_escape = false
+        });
+    }
+
+    /// <summary>
     /// 发送私聊消息
     /// </summary>
     /// <param name="user_id">对方 QQ 号</param>
@@ -130,6 +146,17 @@ public class OneBotClient
             user_id,
             group_id,
             message = message.ToString(),
+            auto_escape = false
+        });
+    }
+
+    public async Task SendPrivateMessageAsync(long user_id, string message, long? group_id = null)
+    {
+        await SendAsync("send_private_msg", new
+        {
+            user_id,
+            group_id,
+            message,
             auto_escape = false
         });
     }

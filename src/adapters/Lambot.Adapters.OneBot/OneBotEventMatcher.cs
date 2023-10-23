@@ -29,11 +29,11 @@ internal class OneBotEventMatcher : IPluginMatcher
         {
             if (parameter.Event is GroupMessageEvent groupEvt)
             {
-                await _oneBotClient.SendGroupMessageAsync(groupEvt.GroupId, (Message)raw_message);
+                await _oneBotClient.SendGroupMessageAsync(groupEvt.GroupId, raw_message);
             }
             else if (parameter.Event is PrivateMessageEvent privateEvt)
             {
-                await _oneBotClient.SendPrivateMessageAsync(privateEvt.UserId, (Message)raw_message, privateEvt.GroupId);
+                await _oneBotClient.SendPrivateMessageAsync(privateEvt.UserId, raw_message, privateEvt.GroupId);
             }
         }
         else if (result is Message message)

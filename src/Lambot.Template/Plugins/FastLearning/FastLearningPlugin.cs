@@ -91,7 +91,7 @@ public class FastLearningPlugin : PluginBase
 
     //匹配群消息
     [OnMessage(Type = MessageType.Group, Break = true)]
-    public async Task<string> MatchQuestionAsync(GroupMessageEvent evt)
+    public string MatchQuestionAsync(GroupMessageEvent evt)
     {
         if (!CheckGroupPermission(evt.GroupId))
         {
@@ -101,7 +101,7 @@ public class FastLearningPlugin : PluginBase
         var answer = _repository.MatchText(evt.RawMessage, evt.GroupId, evt.UserId);
         if (answer != default)
         {
-            return await Task.FromResult(answer);
+            return answer;
         }
 
         answer = _repository.MatchRegex(evt.RawMessage, evt.GroupId, evt.UserId);

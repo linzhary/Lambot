@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using System.Collections.Concurrent;
 using System.Reflection;
+using Newtonsoft.Json;
 
 namespace Lambot.Core.Plugin;
 
