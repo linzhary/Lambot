@@ -29,7 +29,6 @@ public class DicePlugin : PluginBase
     public string? DiceN6Async(GroupMessageEvent evt, Group[] matchGroups)
     {
         var diceCount = int.Parse(matchGroups[0].Value);
-        var faceCount = 6;
         return DiceAsync(diceCount,6);
     }
 
