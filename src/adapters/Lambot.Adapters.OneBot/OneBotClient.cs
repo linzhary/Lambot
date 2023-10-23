@@ -150,6 +150,12 @@ public class OneBotClient
         });
     }
 
+    /// <summary>
+    /// 发送私聊消息
+    /// </summary>
+    /// <param name="user_id"></param>
+    /// <param name="message"></param>
+    /// <param name="group_id"></param>
     public async Task SendPrivateMessageAsync(long user_id, string message, long? group_id = null)
     {
         await SendAsync("send_private_msg", new
@@ -165,7 +171,6 @@ public class OneBotClient
     /// 调用go-cqhttp api
     /// </summary>
     /// <param name="action"></param>
-    /// <param name="params"></param>
     /// <param name="callback"></param>
     public async Task SendAsync(string action, Action<JObject>? callback = null)
     {

@@ -26,10 +26,7 @@ public class FastLearningPlugin : PluginBase
         FastLearningRepository repository,
         LambotContext context)
     {
-        configuration.GetSection("AllowedGroups")?.GetChildren()?.ForEach(item =>
-        {
-            _allowedGroups.Add(Convert.ToInt64(item.Value));
-        });
+        configuration.GetSection("AllowedGroups").GetChildren().ForEach(item => { _allowedGroups.Add(Convert.ToInt64(item.Value)); });
         _oneBotClient = oneBotClient;
         _repository = repository;
         _context = context;
@@ -91,14 +88,14 @@ public class FastLearningPlugin : PluginBase
 
     //匹配群消息
     [OnMessage(Type = MessageType.Group, Break = true)]
-    public string MatchQuestionAsync(GroupMessageEvent evt)
+    public async Task<string> MatchQuestionAsync(GroupMessageEvent evt)
     {
         if (!CheckGroupPermission(evt.GroupId))
         {
             throw _context.Skip();
         }
 
-        var answer = _repository.MatchText(evt.RawMessage, evt.GroupId, evt.UserId);
+        var answer = await _repository.MatchTextAsync(evt.RawMessage, evt.GroupId, evt.UserId);
         if (answer != default)
         {
             return answer;

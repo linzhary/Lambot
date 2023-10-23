@@ -24,7 +24,7 @@ public class DeleteMsgPlugin : PluginBase
         if (seg_0 is not ReplyMessageSeg reply_seg) return;
         var seg_1 = evt.Message?.Segments.ElementAtOrDefault(1);
         if (seg_1 is null) return;
-        if (seg_1 is not AtMessageSeg at_seg) return;
+        if (seg_1 is not AtMessageSeg) return;
 
         await _oneBotClient.SendAsync("delete_msg", new
         {

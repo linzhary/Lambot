@@ -28,7 +28,6 @@ public class FastLearningRepository
 
     private static async Task DownloadImageAsync(string fileName, string url)
     {
-
         if (string.IsNullOrWhiteSpace(fileName)) return;
         if (string.IsNullOrWhiteSpace(url)) return;
 
@@ -40,31 +39,33 @@ public class FastLearningRepository
                 using var client = new HttpClient();
                 File.WriteAllBytes(file, await client.GetByteArrayAsync(url));
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
             }
-
         }
     }
+
     private static string ResolveImage(string fileName)
     {
         if (string.IsNullOrWhiteSpace(fileName)) return fileName;
         return "file://" + Path.GetFullPath($"./data/images/{fileName}").Replace('\\', '/');
     }
 
-    private static string TrimCQImage(Message message, bool download = true)
+    private static async Task<string> TrimCQImageAsync(Message message, bool download = true)
     {
-        message.Segments.ForEach(async seg =>
+        foreach (var seg in message.Segments)
         {
-            if (seg is not ImageMessageSeg img_seg) return;
-            if (string.IsNullOrWhiteSpace(img_seg.File)) return;
+            if (seg is not ImageMessageSeg img_seg) continue;
+            if (string.IsNullOrWhiteSpace(img_seg.File)) continue;
             if (download && img_seg.Url is not null)
             {
                 await DownloadImageAsync(img_seg.File, img_seg.Url);
             }
+
             img_seg.Url = null;
-        });
+        }
+
         return (string)message;
     }
 
@@ -78,7 +79,7 @@ public class FastLearningRepository
         return (string)message;
     }
 
-    private static bool _cache_inital = false;
+    private static bool _cache_inital;
     private static readonly ConcurrentDictionary<string, ConcurrentDictionary<long, string>> _cache = new();
 
     private readonly FastLearningDbContext _dbContext;
@@ -86,35 +87,37 @@ public class FastLearningRepository
     public FastLearningRepository(FastLearningDbContext dbContext)
     {
         _dbContext = dbContext;
-        if(!_cache_inital){
+        if (!_cache_inital)
+        {
             _cache_inital = true;
             var records = dbContext.Records.ToList();
-            records.ForEach(async item =>
+            foreach (var record in records)
             {
-                await AddAsync(item.Question, item.Answer, item.GroupId, item.UserId, true);
-            });
+                AddAsync(record.Question, record.Answer, record.GroupId, record.UserId, true).GetAwaiter().GetResult();
+            }
         }
     }
 
-    private static (string, string) BeforAdd(string question, string answer)
+    private static async Task<(string, string)> BeforAddAsync(string question, string answer)
     {
         question = TrimMessage(question);
-        question = TrimCQImage((Message)question);
+        question = await TrimCQImageAsync((Message)question);
 
         answer = TrimMessage(answer);
-        answer = TrimCQImage((Message)answer);
+        answer = await TrimCQImageAsync((Message)answer);
         return (question, answer);
     }
 
     public async Task<string> AddAsync(string question, string answer, long group_id, long user_id, bool inital = false)
     {
         if (!CheckQuestion(question)) return "暂不支持的添加方式~";
-        (question, answer) = BeforAdd(question, answer);
+        (question, answer) = await BeforAddAsync(question, answer);
         var unionId = UnionId(group_id, user_id);
-    
-        var answers = _cache.GetOrAdd(question, k => new());
-        answers.AddOrUpdate(unionId, answer, (k, v) => answer);
-        if(!inital){
+
+        var answers = _cache.GetOrAdd(question, _ => new());
+        answers.AddOrUpdate(unionId, answer, (_, _) => answer);
+        if (!inital)
+        {
             var entity = await _dbContext.Records
                 .Where(x => x.Question == question)
                 .Where(x => x.GroupId == group_id)
@@ -136,21 +139,23 @@ public class FastLearningRepository
             {
                 entity.Answer = answer;
             }
+
             await _dbContext.SaveChangesAsync();
         }
+
         return "我已经记住了~";
     }
 
-    private static string BeforMatch(string question)
+    private static async Task<string> BeforMatchAsync(string question)
     {
         question = TrimMessage(question);
-        question = TrimCQImage((Message)question, false);
+        question = await TrimCQImageAsync((Message)question, false);
         return question;
     }
 
-    public string? MatchText(string question, long group_id, long user_id)
+    public async Task<string?> MatchTextAsync(string question, long group_id, long user_id)
     {
-        question = BeforMatch(question);
+        question = await BeforMatchAsync(question);
         var answers = _cache.GetValueOrDefault(question);
         return MatchAnswer(answers, group_id, user_id);
     }
@@ -168,6 +173,7 @@ public class FastLearningRepository
                 return match.Result(answer);
             }
         }
+
         return default;
     }
 
@@ -181,12 +187,13 @@ public class FastLearningRepository
             union_id = UnionId(group_id, 0);
             answers.TryGetValue(union_id, out answer);
         }
+
         return answer is null ? answer : ParseCQImage((Message)answer);
     }
 
     public async Task<string> DelAsync(string question, long group_id, long user_id)
     {
-        question = BeforMatch(question);
+        question = await BeforMatchAsync(question);
         var answers = _cache.GetValueOrDefault(question);
         if (answers is null) return "没有找到这个问题~";
         var union_id = UnionId(group_id, user_id);
@@ -195,25 +202,26 @@ public class FastLearningRepository
         {
             return "没有找到这个问题~";
         }
+
         answers.Remove(union_id, out var _);
         await _dbContext.Records
-        .Where(x => x.Question == question)
-        .Where(x => x.GroupId == group_id)
-        .Where(x => x.UserId == user_id)
-        .ExecuteDeleteAsync();
+            .Where(x => x.Question == question)
+            .Where(x => x.GroupId == group_id)
+            .Where(x => x.UserId == user_id)
+            .ExecuteDeleteAsync();
         return $"我不再回答{ParseCQImage((Message)answer)}了~";
     }
 
     public async Task<List<FastLearningRecord>> ListAsync(long group_id, long user_id)
     {
         var result = await _dbContext.Records
-        .Where(x => x.GroupId == group_id)
-        .Where(x => x.UserId == user_id)
-        .ToListAsync();
+            .Where(x => x.GroupId == group_id)
+            .Where(x => x.UserId == user_id)
+            .ToListAsync();
         result.ForEach(item =>
         {
-            item.Question = ParseCQImage((Message)item.Question)!;
-            item.Answer = ParseCQImage((Message)item.Answer)!;
+            item.Question = ParseCQImage((Message)item.Question);
+            item.Answer = ParseCQImage((Message)item.Answer);
         });
         return result;
     }
