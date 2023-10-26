@@ -3,7 +3,7 @@
 public class AtMessageSeg : MessageSeg
 {
     public override MessageSegType Type => MessageSegType.At;
-    public string UserId { get; set; } = null!;
+    public long UserId { get; set; } = 0;
 
     public AtMessageSeg()
     {
@@ -11,14 +11,14 @@ public class AtMessageSeg : MessageSeg
 
     public AtMessageSeg(Dictionary<string, string?> props)
     {
-        UserId = props.GetValueOrDefault("qq")!;
+        UserId = long.Parse(props.GetValueOrDefault("qq", "0")!);
     }
 
     protected override Dictionary<string, string?> GetProps()
     {
         return new()
         {
-            { "qq", UserId }
+            { "qq", UserId.ToString() }
         };
     }
 }

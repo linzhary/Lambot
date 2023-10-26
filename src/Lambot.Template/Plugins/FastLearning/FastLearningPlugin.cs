@@ -70,8 +70,8 @@ public class FastLearningPlugin : PluginBase
     {
         if (!CheckGroupPermission(evt.GroupId)) return null;
 
-        var flag = matchGroups[0].Value;
-        var question = matchGroups[2].Value;
+        var flag = matchGroups[0].Value.Trim();
+        var question = matchGroups[2].Value.Trim();
 
         var is_admin = evt.Sender.Role >= GroupUserRole.Admin;
         switch (flag)
@@ -82,6 +82,25 @@ public class FastLearningPlugin : PluginBase
                 if (!is_admin) return "你没有权限删除有人问~";
                 return await _repository.DelAsync(question, evt.GroupId, 0);
             default:
+                try
+                {
+                    if (int.TryParse(flag, out var userId))
+                    {
+                        if (!is_admin) return "你没有权限删除别人的问答哦~";
+                        return await _repository.DelAsync(question, evt.GroupId, userId);
+                    }
+                    var seg = MessageSeg.Parse(flag);
+                    if (seg is AtMessageSeg at_seg)
+                    {
+                        if (!is_admin) return "你没有权限删除别人的问答哦~";
+                        return await _repository.DelAsync(question, evt.GroupId, at_seg.UserId);
+                    }
+                }
+                catch
+                {
+
+                }
+
                 return "没听明白你在说什么呢~";
         }
     }
