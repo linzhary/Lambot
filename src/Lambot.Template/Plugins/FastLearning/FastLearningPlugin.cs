@@ -4,6 +4,7 @@ using Lambot.Core.Plugin;
 using Lambot.Template.Plugins.FastLearning.Entity;
 using Microsoft.Extensions.Configuration;
 using System.Text.RegularExpressions;
+using Newtonsoft.Json;
 
 namespace Lambot.Template.Plugins.FastLearning;
 
@@ -64,7 +65,7 @@ public class FastLearningPlugin : PluginBase
     }
 
     //删除问答
-    [OnRegex(@$"删除({ME}|{ANY})(问|说)(.*)")]
+    [OnRegex(@$"删除(.*)(问|说)(.*)")]
     [OnMessage(Type = MessageType.Group, Priority = 0, Break = true)]
     public async Task<string?> DelQuestionAsync(GroupMessageEvent evt, Group[] matchGroups)
     {
@@ -84,7 +85,7 @@ public class FastLearningPlugin : PluginBase
             default:
                 try
                 {
-                    if (int.TryParse(flag, out var userId))
+                    if (long.TryParse(flag, out var userId))
                     {
                         if (!is_admin) return "你没有权限删除别人的问答哦~";
                         return await _repository.DelAsync(question, evt.GroupId, userId);
@@ -129,23 +130,49 @@ public class FastLearningPlugin : PluginBase
         throw _context.Skip();
     }
 
-    [OnRegex(@$"看看({ME}|{ANY})(问|说)")]
+    [OnRegex(@$"看看(.*)(问|说)")]
     [OnMessage(Type = MessageType.Group, Priority = 0, Break = true)]
     public async Task<string?> ListQuestionAsync(GroupMessageEvent evt, Group[] matchGroups)
     {
         if (!CheckGroupPermission(evt.GroupId)) return null;
+        var is_admin = evt.Sender.Role >= GroupUserRole.Admin;
 
-        var flag = matchGroups[0].Value;
+        var flag = matchGroups[0].Value.Trim();
+        long forward_user_id;
         List<FastLearningRecord> list;
         switch (flag)
         {
             case ME:
+                forward_user_id = evt.UserId;
                 list = await _repository.ListAsync(evt.GroupId, evt.UserId);
                 break;
             case ANY:
+                forward_user_id = 0;
                 list = await _repository.ListAsync(evt.GroupId, 0);
                 break;
             default:
+                try
+                {
+                    if (long.TryParse(flag, out var userId))
+                    {
+                        if (!is_admin) return "你没有权限查看别人的问答哦~";
+                        forward_user_id = userId;
+                        list = await _repository.ListAsync(evt.GroupId, userId);
+                        break;
+                    }
+                    var seg = MessageSeg.Parse(flag);
+                    if (seg is AtMessageSeg at_seg)
+                    {
+                        if (!is_admin) return "你没有权限查看别人的问答哦~";
+                        forward_user_id = at_seg.UserId;
+                        list = await _repository.ListAsync(evt.GroupId, at_seg.UserId);
+                        break;
+                    }
+                }
+                catch
+                {
+
+                }
                 return "没听明白你在说什么呢~";
         }
 
@@ -162,8 +189,8 @@ public class FastLearningPlugin : PluginBase
                 type = "node",
                 data = new
                 {
-                    name = item.UserId == 0 ? "有人问" : "你问",
-                    uin = item.UserId == 0 ? evt.SelfId : evt.UserId,
+                    name = forward_user_id == 0 ? "有人问" : "你问",
+                    uin = forward_user_id == 0 ? evt.SelfId : forward_user_id,
                     content = item.Question
                 }
             });
