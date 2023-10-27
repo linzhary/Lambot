@@ -3,8 +3,8 @@ using Lambot.Core;
 using Lambot.Core.Plugin;
 using Lambot.Template.Plugins.FastLearning.Entity;
 using Microsoft.Extensions.Configuration;
-using System.Text.RegularExpressions;
 using Newtonsoft.Json;
+using System.Text.RegularExpressions;
 
 namespace Lambot.Template.Plugins.FastLearning;
 
@@ -16,8 +16,8 @@ public class FastLearningPlugin : PluginBase
 
     private const string ME = "我";
     private const string ANY = "有人";
-
-    //private const string TARGET = ".*CQ:at,qq=.*";
+    private const string AT = @"\[CQ:at,qq=\d+\]";
+    private const string QQ = @"\d+";
     private readonly FastLearningRepository _repository;
     private readonly LambotContext _context;
 
@@ -40,7 +40,7 @@ public class FastLearningPlugin : PluginBase
     }
 
     //设置问答
-    [OnRegex(@$"({ME}|{ANY})(问|说)(.*)你(答|说)(.*)")]
+    [OnRegex(@$"\s*({ME}|{ANY})\s*(问|说)\s*(.*)\s*你\s*(答|说)\s*(.*)\s*")]
     //[OnPermission(Role = GroupUserRole.Admin | GroupUserRole.Owner)]
     [OnMessage(Type = MessageType.Group, Priority = 0, Break = true)]
     public async Task<string?> AddQuestionAsync(GroupMessageEvent evt, Group[] matchGroups)
@@ -65,7 +65,7 @@ public class FastLearningPlugin : PluginBase
     }
 
     //删除问答
-    [OnRegex(@$"删除(.*)(问|说)(.*)")]
+    [OnRegex(@$"\s*删除\s*({ME}|{ANY}|{AT}|{QQ})\s*(问|说)\s*(.*)\s*")]
     [OnMessage(Type = MessageType.Group, Priority = 0, Break = true)]
     public async Task<string?> DelQuestionAsync(GroupMessageEvent evt, Group[] matchGroups)
     {
@@ -75,35 +75,34 @@ public class FastLearningPlugin : PluginBase
         var question = matchGroups[2].Value.Trim();
 
         var is_admin = evt.Sender.Role >= GroupUserRole.Admin;
-        switch (flag)
+
+        if (flag == ME)
         {
-            case ME:
-                return await _repository.DelAsync(question, evt.GroupId, evt.UserId);
-            case ANY:
-                if (!is_admin) return "你没有权限删除有人问~";
-                return await _repository.DelAsync(question, evt.GroupId, 0);
-            default:
-                try
-                {
-                    if (long.TryParse(flag, out var userId))
-                    {
-                        if (!is_admin) return "你没有权限删除别人的问答哦~";
-                        return await _repository.DelAsync(question, evt.GroupId, userId);
-                    }
-                    var seg = MessageSeg.Parse(flag);
-                    if (seg is AtMessageSeg at_seg)
-                    {
-                        if (!is_admin) return "你没有权限删除别人的问答哦~";
-                        return await _repository.DelAsync(question, evt.GroupId, at_seg.UserId);
-                    }
-                }
-                catch
-                {
-
-                }
-
-                return "没听明白你在说什么呢~";
+            return await _repository.DelAsync(question, evt.GroupId, evt.UserId);
         }
+        else if (flag == ANY)
+        {
+            if (!is_admin) return "你没有权限删除有人问~";
+            return await _repository.DelAsync(question, evt.GroupId, 0);
+        }
+        else
+        {
+            if (!is_admin) return "你没有权限删除别人的问答哦~";
+            if (Regex.IsMatch(flag, AT))
+            {
+                var seg = MessageSeg.Parse(flag);
+                if (seg is AtMessageSeg at_seg)
+                {
+                    return await _repository.DelAsync(question, evt.GroupId, at_seg.UserId);
+
+                }
+            }
+            else if (long.TryParse(flag, out var userId))
+            {
+                return await _repository.DelAsync(question, evt.GroupId, userId);
+            }
+        }
+        return "没听明白你在说什么呢~";
     }
 
     //匹配群消息
@@ -130,7 +129,7 @@ public class FastLearningPlugin : PluginBase
         throw _context.Skip();
     }
 
-    [OnRegex(@$"看看(.*)(问|说)")]
+    [OnRegex(@$"?\s*看看\s*({ME}|{ANY}|{AT}|{QQ})\s*(问|说)\s*")]
     [OnMessage(Type = MessageType.Group, Priority = 0, Break = true)]
     public async Task<string?> ListQuestionAsync(GroupMessageEvent evt, Group[] matchGroups)
     {
@@ -138,42 +137,40 @@ public class FastLearningPlugin : PluginBase
         var is_admin = evt.Sender.Role >= GroupUserRole.Admin;
 
         var flag = matchGroups[0].Value.Trim();
-        long forward_user_id;
-        List<FastLearningRecord> list;
-        switch (flag)
-        {
-            case ME:
-                forward_user_id = evt.UserId;
-                list = await _repository.ListAsync(evt.GroupId, evt.UserId);
-                break;
-            case ANY:
-                forward_user_id = 0;
-                list = await _repository.ListAsync(evt.GroupId, 0);
-                break;
-            default:
-                try
-                {
-                    if (long.TryParse(flag, out var userId))
-                    {
-                        if (!is_admin) return "你没有权限查看别人的问答哦~";
-                        forward_user_id = userId;
-                        list = await _repository.ListAsync(evt.GroupId, userId);
-                        break;
-                    }
-                    var seg = MessageSeg.Parse(flag);
-                    if (seg is AtMessageSeg at_seg)
-                    {
-                        if (!is_admin) return "你没有权限查看别人的问答哦~";
-                        forward_user_id = at_seg.UserId;
-                        list = await _repository.ListAsync(evt.GroupId, at_seg.UserId);
-                        break;
-                    }
-                }
-                catch
-                {
+        var forward_user_id = 0L;
 
+        var list = new List<FastLearningRecord>(0);
+        if (flag == ME)
+        {
+            forward_user_id = evt.UserId;
+            list = await _repository.ListAsync(evt.GroupId, evt.UserId);
+        }
+        else if (flag == ANY)
+        {
+            forward_user_id = 0;
+            list = await _repository.ListAsync(evt.GroupId, 0);
+        }
+        else
+        {
+            if (!is_admin) return "你没有权限查看别人的问答哦~";
+            if (Regex.IsMatch(flag, AT))
+            {
+                var seg = MessageSeg.Parse(flag);
+                if (seg is AtMessageSeg at_seg)
+                {
+                    forward_user_id = at_seg.UserId;
+                    list = await _repository.ListAsync(evt.GroupId, at_seg.UserId);
                 }
+            }
+            else if (long.TryParse(flag, out var userId))
+            {
+                forward_user_id = userId;
+                list = await _repository.ListAsync(evt.GroupId, userId);
+            }
+            else
+            {
                 return "没听明白你在说什么呢~";
+            }
         }
 
         if (list is null || list.Count == 0)
