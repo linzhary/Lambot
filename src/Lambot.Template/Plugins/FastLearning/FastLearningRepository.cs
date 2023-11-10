@@ -102,11 +102,11 @@ public class FastLearningRepository
         return (string)message;
     }
 
-    private async Task<(string, string)> BeforAddAsync(string question, string answer, long user_id)
+    private async Task<(string, string)> BeforAddAsync(string question, string answer, long user_id, bool inital)
     {
         var typed_question = (Message)question;
         var typed_answer = (Message)answer;
-        foreach (typed_answer.Segments.Any(seg => seg is AtMessageSeg at_seg && at_seg.UserId != user_id))
+        if (!inital && typed_answer.Segments.Any(seg => seg is AtMessageSeg at_seg && at_seg.UserId != user_id))
         {
             throw _context.Finish("不要在问答中艾特别人哦~", true);
         }
@@ -122,7 +122,7 @@ public class FastLearningRepository
     public async Task<string> AddAsync(string question, string answer, long group_id, long user_id, bool inital = false)
     {
         if (!CheckQuestion(question)) return "暂不支持的添加方式~";
-        (question, answer) = await BeforAddAsync(question, answer, user_id);
+        (question, answer) = await BeforAddAsync(question, answer, user_id, inital);
         var unionId = UnionId(group_id, user_id);
 
         var answers = _cache.GetOrAdd(question, _ => new());
