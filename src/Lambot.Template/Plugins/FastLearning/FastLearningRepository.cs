@@ -1,13 +1,36 @@
 ﻿using Lambot.Adapters.OneBot;
+using Lambot.Core;
 using Lambot.Template.Plugins.FastLearning.Entity;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Concurrent;
 using System.Text.RegularExpressions;
+using System.Linq;
 
 namespace Lambot.Template.Plugins.FastLearning;
 
 public class FastLearningRepository
 {
+    private static bool _cache_inital;
+    private static readonly ConcurrentDictionary<string, ConcurrentDictionary<long, string>> _cache = new();
+
+    private readonly FastLearningDbContext _dbContext;
+    private readonly LambotContext _context;
+
+    public FastLearningRepository(FastLearningDbContext dbContext, LambotContext context)
+    {
+        _dbContext = dbContext;
+        if (!_cache_inital)
+        {
+            _cache_inital = true;
+            var records = dbContext.Records.ToList();
+            foreach (var record in records)
+            {
+                AddAsync(record.Question, record.Answer, record.GroupId, record.UserId, true).GetAwaiter().GetResult();
+            }
+        }
+        _context = context;
+    }
+
     private static long UnionId(long group_id, long? user_id)
     {
         return (group_id << 16) | (user_id ?? 0);
@@ -79,39 +102,27 @@ public class FastLearningRepository
         return (string)message;
     }
 
-    private static bool _cache_inital;
-    private static readonly ConcurrentDictionary<string, ConcurrentDictionary<long, string>> _cache = new();
-
-    private readonly FastLearningDbContext _dbContext;
-
-    public FastLearningRepository(FastLearningDbContext dbContext)
+    private async Task<(string, string)> BeforAddAsync(string question, string answer, long user_id)
     {
-        _dbContext = dbContext;
-        if (!_cache_inital)
+        var typed_question = (Message)question;
+        var typed_answer = (Message)answer;
+        foreach (typed_answer.Segments.Any(seg => seg is AtMessageSeg at_seg && at_seg.UserId != user_id))
         {
-            _cache_inital = true;
-            var records = dbContext.Records.ToList();
-            foreach (var record in records)
-            {
-                AddAsync(record.Question, record.Answer, record.GroupId, record.UserId, true).GetAwaiter().GetResult();
-            }
+            throw _context.Finish("不要在问答中艾特别人哦~", true);
         }
-    }
 
-    private static async Task<(string, string)> BeforAddAsync(string question, string answer)
-    {
         question = TrimMessage(question);
-        question = await TrimCQImageAsync((Message)question);
+        question = await TrimCQImageAsync(typed_question);
 
         answer = TrimMessage(answer);
-        answer = await TrimCQImageAsync((Message)answer);
+        answer = await TrimCQImageAsync(typed_answer);
         return (question, answer);
     }
 
     public async Task<string> AddAsync(string question, string answer, long group_id, long user_id, bool inital = false)
     {
         if (!CheckQuestion(question)) return "暂不支持的添加方式~";
-        (question, answer) = await BeforAddAsync(question, answer);
+        (question, answer) = await BeforAddAsync(question, answer, user_id);
         var unionId = UnionId(group_id, user_id);
 
         var answers = _cache.GetOrAdd(question, _ => new());
