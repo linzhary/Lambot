@@ -250,26 +250,29 @@ public class OneBotClient
     /// <returns></returns>
     internal Task BeginMessageProcessTask()
     {
-        return Task.Run(async () =>
+        return Task.Run(() =>
         {
             while (true)
             {
                 if (_messageQueue.TryDequeue(out var message))
                 {
-                    try
+                    _ = Task.Run(async () =>
                     {
-                        var messageObj = JObject.Parse(message);
-                        if (!this.TryInvokeCallback(messageObj) && _receivable)
+                        try
                         {
-                            var @event = _eventParser.Parse(messageObj);
-                            if (@event is null) continue;
-                            await _pluginCollection.OnReceiveAsync(UserId, @event);
+                            var messageObj = JObject.Parse(message);
+                            if (!this.TryInvokeCallback(messageObj) && _receivable)
+                            {
+                                var @event = _eventParser.Parse(messageObj);
+                                if (@event is null) return;
+                                await _pluginCollection.OnReceiveAsync(UserId, @event);
+                            }
                         }
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, "Process Message Failure: {message}", message);
-                    }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError(ex, "Process Message Failure: {message}", message);
+                        }
+                    });
                 }
             }
         });
