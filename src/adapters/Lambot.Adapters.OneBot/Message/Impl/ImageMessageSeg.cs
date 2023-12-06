@@ -2,6 +2,12 @@
 
 public class ImageMessageSeg : MessageSeg
 {
+    public ImageMessageSeg(string file, string url)
+    {
+        File = file;
+        Url = url;
+    }
+
     public ImageMessageSeg(Dictionary<string, string?> props)
     {
         File = props.GetValueOrDefault("file")!;

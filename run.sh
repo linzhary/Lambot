@@ -1,1 +1,1 @@
-sudo dotnet watch --project "src/Lambot.Template/Lambot.Template.csproj"
+dotnet run --project "src/Lambot.Template/Lambot.Template.csproj"
