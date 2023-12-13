@@ -62,7 +62,7 @@ namespace Lambot.Template.Plugins
         [OnStartWith(@"#加菜 ")]
         public async Task<string?> AddFoodAsync(GroupMessageEvent evt)
         {
-            if (evt.Sender.Role < GroupUserRole.Admin) return "你不许加菜!";
+            if (!CheckGroupPermission(evt.GroupId)) return null;
             if (evt.Message is null) return "不知道说的啥玩意";
             if (evt.Message.Segments.ElementAtOrDefault(0) is not TextMessageSeg seg_0)
             {

@@ -300,6 +300,9 @@ public class OneBotClient
 
     public bool ProcessWaitGroupMessage(GroupMessageEvent evt)
     {
-        return _waitMessages.TryUpdate($"{evt.GroupId}_{evt.UserId}", evt.Message, default);
+        var key = $"{evt.GroupId}_{evt.UserId}";
+        if (!_waitMessages.ContainsKey(key)) return false;
+        _waitMessages[key] = evt.Message;
+        return true;
     }
 }
