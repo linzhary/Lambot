@@ -277,4 +277,29 @@ public class OneBotClient
             }
         });
     }
+
+    private readonly ConcurrentDictionary<string, Message?> _waitMessages = new();
+    public async Task<Message> WaitGroupMessageAsync(long group_id, long user_id)
+    {
+        var key = $"{group_id}_{user_id}";
+        var val = default(Message?);
+        _waitMessages.AddOrUpdate(key, val, (_, _) => val);
+
+        while (_waitMessages.TryGetValue(key, out val))
+        {
+            if (val != default)
+            {
+                _waitMessages.Remove(key, out _);
+                break;
+            }
+            await Task.Delay(100);
+        }
+
+        return val!;
+    }
+
+    public bool ProcessWaitGroupMessage(GroupMessageEvent evt)
+    {
+        return _waitMessages.TryUpdate($"{evt.GroupId}_{evt.UserId}", evt.Message, default);
+    }
 }

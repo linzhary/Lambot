@@ -24,6 +24,8 @@ internal class OneBotEventMatcher : IPluginMatcher
 
     public async Task InvokeAsync(PluginMatcherParameter parameter)
     {
+        if (parameter.Event is GroupMessageEvent groupMessageEvent && _oneBotClient.ProcessWaitGroupMessage(groupMessageEvent)) return;
+
         var result = await DyamicInvokeAsync(parameter);
         if (result is string raw_message && !string.IsNullOrEmpty(raw_message))
         {

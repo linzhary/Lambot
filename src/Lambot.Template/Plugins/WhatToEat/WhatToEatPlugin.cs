@@ -81,9 +81,16 @@ namespace Lambot.Template.Plugins
             var fileName = seg_0.Text.Split(" ")[1].Trim();
             var filePath = Path.Combine(_imgPath, $"{fileName}.jpg");
             if (File.Exists(filePath)) return "这个菜已经有了~";
-            if (evt.Message.Segments.ElementAtOrDefault(1) is not ImageMessageSeg seg_1)
+            var imageSegment = evt.Message.Segments.ElementAtOrDefault(1);
+            if (imageSegment is not ImageMessageSeg)
             {
-                return "你倒是给图啊!";
+                await _oneBotClient.SendGroupMessageAsync(evt.GroupId, "你倒是给图啊!");
+                var args = await _oneBotClient.WaitGroupMessageAsync(evt.GroupId, evt.UserId);
+                imageSegment = args.Segments.ElementAtOrDefault(0);
+            }
+            if (imageSegment is not ImageMessageSeg seg_1)
+            {
+                return "你给的图不对!";
             }
             var fileUrl = seg_1.Url;
             using var client = _httpClientFactory.CreateClient();
