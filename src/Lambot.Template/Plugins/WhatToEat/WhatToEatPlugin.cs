@@ -18,24 +18,15 @@ namespace Lambot.Template.Plugins
         private readonly HashSet<long> _allowedGroups = new();
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly OneBotClient _oneBotClient;
-
-        private const string ME = "我";
-        private const string ANY = "有人";
-        private const string AT = @"\[CQ:at,qq=\d+\]";
-        private const string QQ = @"\d+";
-        private readonly LambotContext _context;
         private readonly string _imgPath = Path.Combine(Directory.GetCurrentDirectory(), "data", "whattoeat", "images");
         private readonly Random _random = new((int)DateTimeOffset.Now.ToUnixTimeMilliseconds());
         public WhatToEatPlugin(
             IConfiguration configuration,
             OneBotClient oneBotClient,
-            FastLearningRepository repository,
-            LambotContext context,
             IHttpClientFactory httpClientFactory)
         {
             configuration.GetSection("AllowedGroups").GetChildren().ForEach(item => { _allowedGroups.Add(Convert.ToInt64(item.Value)); });
             _oneBotClient = oneBotClient;
-            _context = context;
             if (!Directory.Exists(_imgPath))
             {
                 Directory.CreateDirectory(_imgPath);
@@ -71,7 +62,6 @@ namespace Lambot.Template.Plugins
         [OnStartWith(@"#加菜 ")]
         public async Task<string?> AddFoodAsync(GroupMessageEvent evt)
         {
-            if (!CheckGroupPermission(evt.GroupId)) return null;
             if (evt.Sender.Role < GroupUserRole.Admin) return "你不许加菜!";
             if (evt.Message is null) return "不知道说的啥玩意";
             if (evt.Message.Segments.ElementAtOrDefault(0) is not TextMessageSeg seg_0)
