@@ -40,9 +40,8 @@ public class FastLearningPlugin : PluginBase
     }
 
     //设置问答
+    [OnGroupMessage]
     [OnRegex(@$"\s*({ME}|{ANY})\s*(问|说)\s*(.*)\s*你\s*(答|说)\s*(.*)\s*")]
-    //[OnPermission(Role = GroupUserRole.Admin | GroupUserRole.Owner)]
-    [OnMessage(Type = MessageType.Group, Priority = 0, Break = true)]
     public async Task<string?> AddQuestionAsync(GroupMessageEvent evt, Group[] matchGroups)
     {
         if (!CheckGroupPermission(evt.GroupId)) return null;
@@ -65,8 +64,8 @@ public class FastLearningPlugin : PluginBase
     }
 
     //删除问答
+    [OnGroupMessage]
     [OnRegex(@$"\s*删除\s*({ME}|{ANY}|{AT}|{QQ})\s*(问|说)\s*(.*)\s*")]
-    [OnMessage(Type = MessageType.Group, Priority = 0, Break = true)]
     public async Task<string?> DelQuestionAsync(GroupMessageEvent evt, Group[] matchGroups)
     {
         if (!CheckGroupPermission(evt.GroupId)) return null;
@@ -106,7 +105,7 @@ public class FastLearningPlugin : PluginBase
     }
 
     //匹配群消息
-    [OnMessage(Type = MessageType.Group, Break = true)]
+    [OnGroupMessage(Priority = 100)]
     public async Task<string> MatchQuestionAsync(GroupMessageEvent evt)
     {
         if (!CheckGroupPermission(evt.GroupId))
@@ -129,8 +128,8 @@ public class FastLearningPlugin : PluginBase
         throw _context.Skip();
     }
 
+    [OnGroupMessage]
     [OnRegex(@$"?\s*看看\s*({ME}|{ANY}|{AT}|{QQ})\s*(问|说)\s*")]
-    [OnMessage(Type = MessageType.Group, Priority = 0, Break = true)]
     public async Task<string?> ListQuestionAsync(GroupMessageEvent evt, Group[] matchGroups)
     {
         if (!CheckGroupPermission(evt.GroupId)) return null;

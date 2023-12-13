@@ -104,17 +104,15 @@ public class FastLearningRepository
 
     private async Task<(string, string)> BeforAddAsync(string question, string answer, long user_id, bool inital)
     {
-        var typed_question = (Message)question;
+        question = TrimMessage(question);
+        question = await TrimCQImageAsync((Message)question);
+
+        answer = TrimMessage(answer);
         var typed_answer = (Message)answer;
         if (!inital && typed_answer.Segments.Any(seg => seg is AtMessageSeg at_seg && at_seg.UserId != user_id))
         {
             throw _context.Finish("不要在问答中艾特别人哦~", true);
         }
-
-        question = TrimMessage(question);
-        question = await TrimCQImageAsync(typed_question);
-
-        answer = TrimMessage(answer);
         answer = await TrimCQImageAsync(typed_answer);
         return (question, answer);
     }

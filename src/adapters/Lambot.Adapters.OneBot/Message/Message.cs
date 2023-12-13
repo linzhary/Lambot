@@ -25,10 +25,7 @@ public class Message
             }
             else
             {
-                message.Segments.Add(new TextMessageSeg
-                {
-                    Text = parser.ReadTo('[')
-                });
+                message.Segments.Add(new TextMessageSeg(parser.ReadTo('[')));
             }
         }
         return message;

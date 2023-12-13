@@ -24,7 +24,7 @@ public abstract class MessageSeg
         var sections = code_seg[4..^1].Split(',');
         if (!Enum.TryParse(sections[0].ToPascalCase(), true, out MessageSegType type))
         {
-            return new TextMessageSeg { Text = code_seg };
+            return new TextMessageSeg(code_seg);
         }
 
         var props = new Dictionary<string, string?>();

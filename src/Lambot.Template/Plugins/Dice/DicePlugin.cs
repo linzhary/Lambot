@@ -20,23 +20,23 @@ public class DicePlugin : PluginBase
         _httpClientFactory = httpClientFactory;
     }
 
+    [OnGroupMessage]
     [OnRegex(@"\.[rR][dD]")]
-    [OnMessage(Type = MessageType.Group, Priority = -1, Break = true)]
     public string? Dice16Async(GroupMessageEvent evt, Group[] matchGroups)
     {
         return DiceAsync(1, 6);
     }
 
+    [OnGroupMessage]
     [OnRegex(@"\.[rR]([-+]?\d+\.?\d*)[dD]")]
-    [OnMessage(Type = MessageType.Group, Priority = -1, Break = true)]
     public string? DiceN6Async(GroupMessageEvent evt, Group[] matchGroups)
     {
         var diceCount = int.Parse(matchGroups[0].Value);
         return DiceAsync(diceCount, 6);
     }
 
+    [OnGroupMessage]
     [OnRegex(@"\.[rR]([-+]?\d+\.?\d*)[dD]([-+]?\d+\.?\d*)")]
-    [OnMessage(Type = MessageType.Group, Priority = 0, Break = true)]
     public string? DiceNNAsync(GroupMessageEvent evt, Group[] matchGroups)
     {
         var diceCount = int.Parse(matchGroups[0].Value);
@@ -63,8 +63,8 @@ public class DicePlugin : PluginBase
         return $"你扔了【{diceCount}】个【{faceCount}】面的骰子, 结果是【{result}】";
     }
 
+    [OnGroupMessage]
     [OnRegex(@"60[秒,s,S]")]
-    [OnMessage(Type = MessageType.Group, Priority = 0, Break = true)]
     public async Task<Message?> ZaoBao(GroupMessageEvent evt)
     {
         using var client = _httpClientFactory.CreateClient();

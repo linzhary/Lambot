@@ -34,7 +34,6 @@ public class OnPermission : PermMatcher
             if (Role is not GroupUserRole.Unknow && (Role & groupEvent.Sender.Role) == 0)
             {
                 return false;
-
             }
         }
 
