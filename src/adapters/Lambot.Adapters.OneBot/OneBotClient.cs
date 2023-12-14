@@ -17,7 +17,7 @@ public class OneBotClient
     private WebSocket? _webSocket;
     private readonly ArraySegment<byte> _socketBuffer = new(new byte[1024 * 4]);
     private readonly List<byte> _messageBuffer = new();
-    private readonly ConcurrentQueue<string> _messageQueue = new();
+    private readonly BlockingCollection<string> _messageQueue = new(new ConcurrentQueue<string>());
     private readonly ConcurrentDictionary<string, Action<JObject>> _callbackMap = new();
     private readonly PostEventParser _eventParser;
     private readonly IPluginCollection _pluginCollection;
@@ -229,18 +229,18 @@ public class OneBotClient
                     result = null;
                 }
 
-                if (result is not null && !result.CloseStatus.HasValue &&
-                    result.MessageType == WebSocketMessageType.Text)
+                if (result is not null && !result.CloseStatus.HasValue && result.MessageType == WebSocketMessageType.Text)
                 {
                     _messageBuffer.AddRange(_socketBuffer.Slice(0, result.Count));
                     if (result.EndOfMessage)
                     {
                         var message = Encoding.UTF8.GetString(_messageBuffer.ToArray());
-                        this._messageQueue.Enqueue(message);
+                        _messageQueue.Add(message);
                         _messageBuffer.Clear();
                     }
                 }
             } while (result is not null && !result.CloseStatus.HasValue);
+            _messageQueue.CompleteAdding();
         });
     }
 
@@ -252,28 +252,26 @@ public class OneBotClient
     {
         return Task.Run(() =>
         {
-            while (true)
+            while (!_messageQueue.IsCompleted)
             {
-                if (_messageQueue.TryDequeue(out var message))
+                var message = _messageQueue.Take();
+                _ = Task.Run(async () =>
                 {
-                    _ = Task.Run(async () =>
+                    try
                     {
-                        try
+                        var messageObj = JObject.Parse(message);
+                        if (!this.TryInvokeCallback(messageObj) && _receivable)
                         {
-                            var messageObj = JObject.Parse(message);
-                            if (!this.TryInvokeCallback(messageObj) && _receivable)
-                            {
-                                var @event = _eventParser.Parse(messageObj);
-                                if (@event is null) return;
-                                await _pluginCollection.OnReceiveAsync(UserId, @event);
-                            }
+                            var @event = _eventParser.Parse(messageObj);
+                            if (@event is null) return;
+                            await _pluginCollection.OnReceiveAsync(UserId, @event);
                         }
-                        catch (Exception ex)
-                        {
-                            _logger.LogError(ex, "Process Message Failure: {message}", message);
-                        }
-                    });
-                }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Process Message Failure: {message}", message);
+                    }
+                });
             }
         });
     }
