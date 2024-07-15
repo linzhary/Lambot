@@ -409,3 +409,4 @@ FodyWeavers.xsd
 appsettings.json
 wwwroot
 data
+/src/Lambot.Template/Executable/main.exe
