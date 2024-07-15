@@ -17,4 +17,9 @@ public class PluginInfo : Attribute
     /// 插件版本
     /// </summary>
     public string? Version { get; set; } = "1.0.0";
+
+    /// <summary>
+    /// 是否启用
+    /// </summary>
+    public bool Enabled { get; set; } = true;
 }

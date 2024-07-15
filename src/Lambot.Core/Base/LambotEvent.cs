@@ -1,7 +1,11 @@
-﻿namespace Lambot.Core;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
-public abstract class LambotEvent
+namespace Lambot.Core;
+
+public class LambotEvent
 {
-    public long MessageId { get; set; }
-    public string RawMessage { get; set; } = null!;
 }

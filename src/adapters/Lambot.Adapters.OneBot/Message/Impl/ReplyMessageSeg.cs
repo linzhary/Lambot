@@ -11,7 +11,7 @@ public class ReplyMessageSeg : MessageSeg
         Id = props.GetValueOrDefault("id")!;
     }
 
-    public override MessageSegType Type => MessageSegType.Image;
+    public override MessageSegType Type => MessageSegType.Reply;
     public string Id { get; set; }
     protected override Dictionary<string, string?> GetProps()
     {

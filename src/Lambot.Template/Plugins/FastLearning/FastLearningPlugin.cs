@@ -1,14 +1,14 @@
 ﻿using Lambot.Adapters.OneBot;
 using Lambot.Core;
 using Lambot.Core.Plugin;
-using Lambot.Template.Plugins.FastLearning.Entity;
+using Lambot.Template.Database.Entity;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using System.Text.RegularExpressions;
 
 namespace Lambot.Template.Plugins.FastLearning;
 
-[PluginInfo(Name = "快速学习")]
+[PluginInfo(Name = "快速学习", Enabled = false)]
 public class FastLearningPlugin : PluginBase
 {
     private readonly HashSet<long> _allowedGroups = new();
@@ -32,20 +32,12 @@ public class FastLearningPlugin : PluginBase
         _repository = repository;
         _context = context;
     }
-
-    //判断群号是否在白名单
-    private bool CheckGroupPermission(long group_id)
-    {
-        return _allowedGroups.Contains(group_id);
-    }
-
+    
     //设置问答
     [OnGroupMessage]
     [OnRegex(@$"\s*({ME}|{ANY})\s*(问|说)\s*(.*)\s*你\s*(答|说)\s*(.*)\s*")]
     public async Task<string?> AddQuestionAsync(GroupMessageEvent evt, Group[] matchGroups)
     {
-        if (!CheckGroupPermission(evt.GroupId)) return null;
-
         var flag = matchGroups[0].Value;
         var question = matchGroups[2].Value;
         var answer = matchGroups[4].Value;
@@ -68,8 +60,6 @@ public class FastLearningPlugin : PluginBase
     [OnRegex(@$"\s*删除\s*({ME}|{ANY}|{AT}|{QQ})\s*(问|说)\s*(.*)\s*")]
     public async Task<string?> DelQuestionAsync(GroupMessageEvent evt, Group[] matchGroups)
     {
-        if (!CheckGroupPermission(evt.GroupId)) return null;
-
         var flag = matchGroups[0].Value.Trim();
         var question = matchGroups[2].Value.Trim();
 
@@ -105,14 +95,9 @@ public class FastLearningPlugin : PluginBase
     }
 
     //匹配群消息
-    [OnGroupMessage(Priority = 100)]
-    public async Task<string> MatchQuestionAsync(GroupMessageEvent evt)
+    [OnGroupMessage(Priority = 100, Break = true)]
+    public async Task<string?> MatchQuestionAsync(GroupMessageEvent evt)
     {
-        if (!CheckGroupPermission(evt.GroupId))
-        {
-            throw _context.Skip();
-        }
-
         var answer = await _repository.MatchTextAsync(evt.RawMessage, evt.GroupId, evt.UserId);
         if (answer != default)
         {
@@ -132,7 +117,6 @@ public class FastLearningPlugin : PluginBase
     [OnRegex(@$"?\s*看看\s*({ME}|{ANY}|{AT}|{QQ})\s*(问|说)\s*")]
     public async Task<string?> ListQuestionAsync(GroupMessageEvent evt, Group[] matchGroups)
     {
-        if (!CheckGroupPermission(evt.GroupId)) return null;
         var is_admin = evt.Sender.Role >= GroupUserRole.Admin;
 
         var flag = matchGroups[0].Value.Trim();
@@ -207,6 +191,7 @@ public class FastLearningPlugin : PluginBase
             group_id = evt.GroupId,
             messages = forward_list
         });
-        throw _context.Break();
+
+         throw _context.Break();
     }
 }

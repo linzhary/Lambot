@@ -13,7 +13,7 @@ public abstract class TypeMatcher : Attribute
     /// <summary>
     /// 是否阻断消息
     /// </summary>
-    public bool Break { get; set; } = true;
+    public bool Break { get; set; } = false;
 
     public abstract bool Check(LambotEvent evt);
 }

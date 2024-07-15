@@ -5,8 +5,9 @@ public class AtMessageSeg : MessageSeg
     public override MessageSegType Type => MessageSegType.At;
     public long UserId { get; set; } = 0;
 
-    public AtMessageSeg()
+    public AtMessageSeg(long userId)
     {
+        UserId = userId;
     }
 
     public AtMessageSeg(Dictionary<string, string?> props)

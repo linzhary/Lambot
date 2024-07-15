@@ -7,19 +7,23 @@ namespace Lambot.Adapters.OneBot;
 public abstract class BaseMessageEventSender
 {
     /// <summary>
-    /// 年龄
+    /// 发送者QQ号
     /// </summary>
-    public int Age { get; set; }
-
+    public long UserId { get; set; } = default!;
     /// <summary>
     /// 昵称
     /// </summary>
-    public string? Nickname { get; set; }
+    public string Nickname { get; set; } = default!;
 
     /// <summary>
     /// 性别
     /// </summary>
-    public Sex Sex { get; set; }
+    public Sex Sex { get; set; } = default!;
+
+    /// <summary>
+    /// 年龄
+    /// </summary>
+    public int Age { get; set; } = default!;
 }
 
 public abstract class BaseMessageEvent : LambotEvent
@@ -54,6 +58,10 @@ public abstract class BaseMessageEvent : LambotEvent
     /// </summary>
     [JsonIgnore]
     public Message? Message { get; set; }
+
+    public long MessageId { get; set; }
+
+    public string RawMessage { get; set; } = null!;
 
     internal BaseMessageEvent Convert()
     {

@@ -6,7 +6,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 
-[PluginInfo(Name = "撤回消息")]
+[PluginInfo(Name = "撤回消息", Enabled = false)]
 public class DeleteMsgPlugin : PluginBase
 {
     private readonly OneBotClient _oneBotClient;

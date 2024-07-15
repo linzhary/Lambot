@@ -8,12 +8,12 @@ public class OnPermission : PermMatcher
     /// <summary>
     /// 用户ID，默认允许所有
     /// </summary>
-    public long[] Users { get; set; } = Array.Empty<long>();
+    public long[] Users { get; set; } = [];
 
     /// <summary>
     /// 群聊ID，默认允许所有
     /// </summary>
-    public long[] Groups { get; set; } = Array.Empty<long>();
+    public long[] Groups { get; set; } = [];
 
     /// <summary>
     /// 群聊角色，默认允许所有

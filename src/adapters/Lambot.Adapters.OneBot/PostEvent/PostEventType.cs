@@ -1,16 +1,19 @@
 ﻿namespace Lambot.Adapters.OneBot;
 
+/// <summary>
+/// 上报类型:
+/// </summary>
 public enum PostEventType
 {
-    /// <summary>
-    /// 未知
-    /// </summary>
-    Unknow,
-
     /// <summary>
     /// 消息, 例如, 群聊消息
     /// </summary>
     Message,
+
+    /// <summary>
+    /// 消息发送，例如，bot发送在群里的消息
+    /// </summary>
+    MessageSent,
 
     /// <summary>
     /// 请求, 例如, 好友申请

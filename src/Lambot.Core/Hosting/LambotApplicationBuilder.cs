@@ -30,7 +30,11 @@ public class LambotApplicationBuilder
         app.UseDefaultFiles();
         app.UseStaticFiles();
 
-        app.UseWebSockets();
+        app.UseWebSockets(new WebSocketOptions
+        {
+            KeepAliveInterval = TimeSpan.FromSeconds(120),
+            ReceiveBufferSize = 1024 * 4
+        });
         foreach (var adapter in AdapterCollection.Adapters.Values)
         {
             adapter.OnBuild(app);

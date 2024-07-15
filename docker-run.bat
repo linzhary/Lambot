@@ -1,0 +1,1 @@
+docker run --name lambot -d -v D:\Data\Lambot\data:/app/data -v D:\Data\Lambot\wwwroot:/app/wwwroot -p 9527:9527 lambottemplate:latest

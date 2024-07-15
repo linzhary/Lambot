@@ -18,7 +18,8 @@ public sealed class OnStartWith : RuleMatcher
 
     public override bool Check(LambotEvent evt)
     {
-        if (string.IsNullOrWhiteSpace(evt.RawMessage)) return false;
-        return evt.RawMessage.StartsWith(_text);
+        if (evt is not BaseMessageEvent messageEvent) return false;
+        if (string.IsNullOrWhiteSpace(messageEvent.RawMessage)) return false;
+        return messageEvent.RawMessage.StartsWith(_text);
     }
 }

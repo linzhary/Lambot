@@ -1,10 +1,11 @@
 ﻿using Lambot.Adapters.OneBot;
 using Lambot.Core;
-using Lambot.Template.Plugins.FastLearning.Entity;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Concurrent;
 using System.Text.RegularExpressions;
 using System.Linq;
+using Lambot.Template.Database.Entity;
+using Lambot.Template.Database;
 
 namespace Lambot.Template.Plugins.FastLearning;
 
@@ -13,16 +14,16 @@ public class FastLearningRepository
     private static bool _cache_inital;
     private static readonly ConcurrentDictionary<string, ConcurrentDictionary<long, string>> _cache = new();
 
-    private readonly FastLearningDbContext _dbContext;
+    private readonly LambotDbContext _dbContext;
     private readonly LambotContext _context;
 
-    public FastLearningRepository(FastLearningDbContext dbContext, LambotContext context)
+    public FastLearningRepository(LambotDbContext dbContext, LambotContext context)
     {
         _dbContext = dbContext;
         if (!_cache_inital)
         {
             _cache_inital = true;
-            var records = dbContext.Records.ToList();
+            var records = dbContext.FastLearningRecords.ToList();
             foreach (var record in records)
             {
                 AddAsync(record.Question, record.Answer, record.GroupId, record.UserId, true).GetAwaiter().GetResult();
@@ -127,7 +128,7 @@ public class FastLearningRepository
         answers.AddOrUpdate(unionId, answer, (_, _) => answer);
         if (!inital)
         {
-            var entity = await _dbContext.Records
+            var entity = await _dbContext.FastLearningRecords
                 .Where(x => x.Question == question)
                 .Where(x => x.GroupId == group_id)
                 .Where(x => x.UserId == user_id)
@@ -213,7 +214,7 @@ public class FastLearningRepository
         }
 
         answers.Remove(union_id, out var _);
-        await _dbContext.Records
+        await _dbContext.FastLearningRecords
             .Where(x => x.Question == question)
             .Where(x => x.GroupId == group_id)
             .Where(x => x.UserId == user_id)
@@ -223,7 +224,7 @@ public class FastLearningRepository
 
     public async Task<List<FastLearningRecord>> ListAsync(long group_id, long user_id)
     {
-        var result = await _dbContext.Records
+        var result = await _dbContext.FastLearningRecords
             .Where(x => x.GroupId == group_id)
             .Where(x => x.UserId == user_id)
             .ToListAsync();

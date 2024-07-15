@@ -29,22 +29,22 @@ internal class OneBotEventMatcher : IPluginMatcher
         var result = await DyamicInvokeAsync(parameter);
         if (result is string raw_message && !string.IsNullOrEmpty(raw_message))
         {
-            if (parameter.Event is GroupMessageEvent groupEvt)
+            if (parameter.Event is IGroupEvent groupEvt)
             {
                 await _oneBotClient.SendGroupMessageAsync(groupEvt.GroupId, raw_message);
             }
-            else if (parameter.Event is PrivateMessageEvent privateEvt)
+            else if (parameter.Event is IPrivateEvent privateEvt)
             {
                 await _oneBotClient.SendPrivateMessageAsync(privateEvt.UserId, raw_message, privateEvt.GroupId);
             }
         }
         else if (result is Message message)
         {
-            if (parameter.Event is GroupMessageEvent groupEvt)
+            if (parameter.Event is IGroupEvent groupEvt)
             {
                 await _oneBotClient.SendGroupMessageAsync(groupEvt.GroupId, message);
             }
-            else if (parameter.Event is PrivateMessageEvent privateEvt)
+            else if (parameter.Event is IPrivateEvent privateEvt)
             {
                 await _oneBotClient.SendPrivateMessageAsync(privateEvt.UserId, message, privateEvt.GroupId);
             }
@@ -59,9 +59,20 @@ internal class OneBotEventMatcher : IPluginMatcher
         if (!parameter.IsRuleChecked) return null;
         if (!parameter.IsPermChecked) return null;
 
-        _logger.LogInformation("消息 [{message_id}] 匹配到 [{plugin__name}] 的 [{method_name}]"
-            , parameter.Event.MessageId, parameter.PluginInfo.Name, parameter.MethodInfo.Name);
+        if (parameter.Event is BaseMessageEvent messageEvent)
+        {
+            _logger.LogInformation("消息 [{message_id}] 匹配到 [{plugin__name}] 的 [{method_name}]"
+            , messageEvent.MessageId, parameter.PluginInfo.Name, parameter.MethodInfo.Name);
+            if (parameter.RuleMatcher is OnCommand commandMatcher)
+            {
+                messageEvent.RawMessage = messageEvent.RawMessage.Replace($"{commandMatcher.GetCommand()} ", string.Empty);
+                messageEvent.Convert();
+            }
+        }
+        //if (parameter.Event is BaseNoticeEvent)
+        //{
 
+        //}
         _context.IsBreaked = parameter.TypeMatcher!.Break;
 
         var parameterValues = new List<object?>();
@@ -141,9 +152,13 @@ internal class OneBotEventMatcher : IPluginMatcher
             {
                 if (innerEx.IsFinish)
                 {
-                    return ex.Message;
+                    return innerEx.Message;
                 }
             }
+        }
+        catch(Exception ex)
+        {
+            return ex.Message;
         }
         return null;
     }

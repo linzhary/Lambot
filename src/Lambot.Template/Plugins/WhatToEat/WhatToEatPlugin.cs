@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace Lambot.Template.Plugins
 {
-    [PluginInfo(Name = "吃什么")]
+    [PluginInfo(Name = "吃什么",Enabled = false)]
     public class WhatToEatPlugin : PluginBase
     {
         private readonly HashSet<long> _allowedGroups = new();

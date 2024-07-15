@@ -10,8 +10,8 @@ namespace Lambot.Adapters.OneBot;
 public class PostEventParser
 {
     private readonly ILogger<PostEventParser> _logger;
-    private readonly IConfiguration _configuration;
-    private readonly List<long> _superUsers = new List<long>();
+    private readonly List<long> _superUsers = [];
+    private readonly List<long> _allowGroups = [];
 
     private readonly JsonSerializer _deserializer = JsonSerializer.Create(new JsonSerializerSettings
     {
@@ -19,7 +19,7 @@ public class PostEventParser
         {
             NamingStrategy = new SnakeCaseNamingStrategy()
         },
-        Converters = new JsonConverter[] { new StringToEnumJsonConverter() }
+        Converters = [new StringToEnumJsonConverter()]
     });
 
     public PostEventParser(ILogger<PostEventParser> logger, IConfiguration configuration)
@@ -29,7 +29,10 @@ public class PostEventParser
         {
             _superUsers.Add(Convert.ToInt64(item.Value));
         });
-        _configuration = configuration;
+        configuration.GetSection("AllowGroups")?.GetChildren()?.ForEach(item =>
+        {
+            _allowGroups.Add(Convert.ToInt64(item.Value));
+        });
     }
 
     /// <summary>
@@ -43,12 +46,36 @@ public class PostEventParser
         return MessageUtils.ConvertTo<PostEventType>(post_type) switch
         {
             PostEventType.Message => ParseMessageEvent(eventMessage),
+            PostEventType.Notice => ParseNoticeEvent(eventMessage),
             _ => null
         };
     }
 
     /// <summary>
-    /// 消息解析
+    /// 通知消息处理
+    /// </summary>
+    /// <param name="eventObj"></param>
+    /// <returns></returns>
+    /// <exception cref="NotImplementedException"></exception>
+    private BaseNoticeEvent? ParseNoticeEvent(JObject eventObj)
+    {
+        BaseNoticeEvent evt;
+        if (eventObj.ContainsKey("group_id"))
+        {
+            var group_evt = eventObj.ToObject<GroupNoticeEvent>(_deserializer)!;
+            if (!_allowGroups.Contains(group_evt.GroupId)) return null;
+            evt = group_evt;
+        }
+        else
+        {
+            evt = eventObj.ToObject<PrivateNoticeEvent>(_deserializer)!;
+        }
+        evt.RawMessage = eventObj;
+        return evt;
+    }
+
+    /// <summary>
+    /// 普通消息解析
     /// </summary>
     /// <param name="eventObj"></param>
     /// <returns></returns>
@@ -68,9 +95,10 @@ public class PostEventParser
     /// </summary>
     /// <param name="eventObj"></param>
     /// <returns></returns>
-    internal BaseMessageEvent ParseGroupMessageEvent(JObject eventObj)
+    internal BaseMessageEvent? ParseGroupMessageEvent(JObject eventObj)
     {
         var evt = eventObj.ToObject<GroupMessageEvent>(_deserializer)!;
+        if (!_allowGroups.Contains(evt.GroupId)) return null;
         if (_superUsers.Contains(evt.Sender.UserId))
         {
             evt.Sender.Role = GroupUserRole.SuperAdmin;
@@ -86,7 +114,7 @@ public class PostEventParser
     /// </summary>
     /// <param name="eventObj"></param>
     /// <returns></returns>
-    internal BaseMessageEvent ParsePriverMessageEvent(JObject eventObj)
+    internal BaseMessageEvent? ParsePriverMessageEvent(JObject eventObj)
     {
         var evt = (PrivateMessageEvent)eventObj;
 

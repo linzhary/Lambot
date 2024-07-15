@@ -7,10 +7,10 @@ public class PrivateMessageEventSender : BaseMessageEventSender
     /// <summary>
     /// 当私聊类型为群临时会话时, 群号
     /// </summary>
-    public int GroupId { get; set; } = 0;
+    public int? GroupId { get; set; } = default;
 }
 
-public class PrivateMessageEvent : BaseMessageEvent
+public class PrivateMessageEvent : BaseMessageEvent, IPrivateEvent
 {
     public long? GroupId { get; set; } 
     /// <summary>

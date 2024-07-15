@@ -14,7 +14,8 @@ public class OnFullMatch : RuleMatcher
 
     public override bool Check(LambotEvent evt)
     {
-        if (string.IsNullOrWhiteSpace(evt.RawMessage)) return false;
-        return evt.RawMessage == _text;
+        if (evt is not BaseMessageEvent messageEvent) return false;
+        if (string.IsNullOrWhiteSpace(messageEvent.RawMessage)) return false;
+        return messageEvent.RawMessage == _text;
     }
 }

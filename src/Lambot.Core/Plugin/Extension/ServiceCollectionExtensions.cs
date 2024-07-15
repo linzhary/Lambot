@@ -33,6 +33,7 @@ public static class ServiceCollectionExtensions
                 {
                     Name = plugin.FullName,
                 };
+                if (!pluginAttr.Enabled) continue;
                 foreach (var pluginMethod in plugin.GetMethods())
                 {
                     LambotPluginCollection.TryAdd(pluginAttr, pluginMethod);

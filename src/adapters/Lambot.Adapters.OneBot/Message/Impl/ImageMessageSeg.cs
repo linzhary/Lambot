@@ -2,6 +2,11 @@
 
 public class ImageMessageSeg : MessageSeg
 {
+    public ImageMessageSeg(string file)
+    {
+        File = file;
+    }
+
     public ImageMessageSeg(string file, string url)
     {
         File = file;

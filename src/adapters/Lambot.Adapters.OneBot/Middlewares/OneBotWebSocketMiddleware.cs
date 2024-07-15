@@ -17,7 +17,7 @@ public class OneBotWebSocketMiddleware : IMiddleware
     {
         if (!context.Request.Path.HasValue) await next(context);
         var requestPath = context.Request.Path.Value!;
-        if (requestPath.TrimEnd('/') == "/onebot/v11")
+        if (requestPath.TrimEnd('/') == "/onebot/v11/ws")
         {
             if (context.WebSockets.IsWebSocketRequest)
             {

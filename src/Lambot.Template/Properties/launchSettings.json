@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "Lambot.Template": {
+      "commandName": "Project"
+    },
+    "Container (Dockerfile)": {
+      "commandName": "Docker"
+    }
+  }
+}
